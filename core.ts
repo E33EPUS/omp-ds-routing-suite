@@ -38,9 +38,9 @@ export const REACT_PERSONA =
   + 'Finish with a usable deliverable and a short summary.'
 
 /** Weak (internal-routing) personas — model-specific optimum.
- *  pro:   spec sentence + classify instruction (w6c, P24: 24/24 routing)
+ *  pro:   spec sentence + classify instruction (dsh-routing-suite README)
  *  flash: neutral + classify + session anchors + deep-first
- *         (P23: 96% routing, 100% single-task completion) */
+ *         (P8-Flash: Flash's routing window is the weak-persona region) */
 export const WEAK_PRO =
   'You are a helpful software engineer assistant.\n'
   + 'Before acting, decide the task type (build or fix) and adopt the matching '
@@ -59,17 +59,17 @@ export const WEAK_FLASH =
 export const GUIDE_BASE =
   '\n\nRouter: classify this task (build or fix) now, then adopt the matching style — build: direct production; fix: inspect-first.'
 
-/** Rounds 3+: anti-dilution reclassification (P19 boost / P21 b-boost). */
+/** Rounds 3+: anti-dilution reclassification (paper L: b-boost variant). */
 export const GUIDE_BOOST =
   '\n\nRouter: this is a NEW task, different from the previous ones. Classify it fresh (build or fix) and adopt the matching style — build: direct production; fix: inspect-first. Do not follow the previous task\'s style.'
 
-/** Fast-convergence tail for simple tasks (P30: 1 step, zero waste). */
+/** Fast-convergence tail for simple tasks. */
 export const GUIDE_COMMIT = ' Think deeply first, then commit and act.'
 
-/** Directed deep tail for complex tasks (P30: depth without rumination). */
+/** Directed deep tail for complex tasks (P10: deep must pair with a convergence instruction). */
 export const GUIDE_DEEP = ' Think deeply about the architecture, edge cases, and integration points. Do not spend reasoning on the environment or tooling. Produce when your information is complete.'
 
-/** Decision-closure tail — non-Flash models only (P30: +12% depth on Pro). */
+/** Decision-closure tail — non-Flash models only (P10 deep-react design). */
 export const GUIDE_CLOSURE = ' End each reasoning block with a decision or an information need.'
 
 // ── complexity heuristic ───────────────────────────────────────────────────

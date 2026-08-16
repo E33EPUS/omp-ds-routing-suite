@@ -137,6 +137,15 @@ two runs of the same C1 condition differed by ~30K characters of thinking
 (66.9K vs 37.6K, see 3.3). Directional claims below survive that noise;
 magnitudes do not.
 
+Metric comparability: the paper's lexicon metrics — first-line classes
+(minimal-like / standard-like / ambiguous), per-block we/letMe ratios,
+planScore (we − letMe), `Interesting`-leading promote transients, and
+convergence rate — were **not** reproduced in the ablation sessions. Our
+counts (depth chars, hesitation markers, token frequencies) use a different
+ruler. The numbers in 3.2–3.3 are comparable with each other, not with the
+paper's tables; where a claim maps onto a paper experiment, section 3.4 says
+so explicitly.
+
 ### 3.2 Bilingual persona matrix (n=5, official API)
 
 Same read-type and build-type micro-tasks under three personas, five requests
@@ -198,10 +207,14 @@ Conclusions:
    act beyond `bash`/`edit`, so it reasons instead. The earlier attribution of
    the 98K figure to the DEEP guidance was wrong; the guidance contributes
    within noise (D1 vs B: +2.2K).
-2. **DEEP guidance is neutral on Flash.** D1 (manual DEEP text) vs B: +2.2K,
-   inside the ±30K noise band. The paper's "+12% depth" for deep guidance
-   (P30) is Pro data; its own Flash observation ("c-closed ≈ b-directed") is
-   confirmed here on a real task.
+2. **DEEP guidance shows no effect on an already-saturated baseline.** D1
+   (manual DEEP text) vs B: +2.2K, inside the ±30K noise band. Scope: B's
+   baseline depth (32.1K) already matches the paper's budget-exhaustion
+   ceiling for deep-only instructions (P10: 32.5K at 0% convergence); the
+   paper's depth doubling (9.7K → 18.4K, P10 deep-react) was measured from a
+   react low baseline with an explicit "then produce" binding. Depth gain from
+   DEEP text has room only below that ceiling; this ablation does not
+   contradict P10 and does not transfer to low-baseline setups.
 3. **weak persona stacking is small.** C1 vs D1: +3.5K, inside noise.
 4. **Hesitation and "I will" are byproducts of depth.** Both rise with depth
    across groups (28 → 117, 30 → 72). They are fingerprints of extended
@@ -211,9 +224,9 @@ Conclusions:
 
 | claim | status here |
 |---|---|
-| Flash routes better in weak than spec (P11: +5.7 vs −2.0) | reproduced as the default-mode choice; not re-measured end-to-end |
-| deep guidance is neutral on Flash, P30 ("c-closed ≈ b-directed") | confirmed on a real greenfield task (3.3) |
-| anchoring steers the we-track trajectory (dsh-anchored-standard) | trajectory not re-measured; the depth effect is new (3.3) |
+| Flash's weak-persona region is its routing window (P8-Flash: neutral +2.00, react-weak +4.67 discrimination) | adopted as the default mode; not re-measured end-to-end |
+| deep-react doubles depth on Flash from a low baseline, P10 (9.7K → 18.4K, 100% convergence) | not reproduced — our B baseline already sat at budget-ceiling depth (3.3) |
+| anchoring steers the we-track trajectory (dsh-anchored-standard); Flash is catalog-immune in trajectory terms (paper §5.2) | trajectory not re-measured; the depth effect (3.3) is a different dimension — catalog changes depth, not form |
 | language layering (persona locks form, system sets language) | new, outside the paper's all-English scope (3.2) |
 | injection is blocked by `suppressedContextSources` (DSH) | architecture difference: OMP replaces the system array wholesale, no injector needed (2) |
 

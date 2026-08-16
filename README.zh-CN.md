@@ -111,6 +111,12 @@ dsh-routing-suite 需要注入器 + `suppressedContextSources` 表。Oh My Pi �
 n=5。其二，单次波动：同一 C1 条件跑两次，thinking 字符数差约 3 万
 （66.9K vs 37.6K，见 3.3）。方向性结论在该波动下成立；数值不成立
 
+指标可比性：论文的 lexicon 口径——首行形态分类（minimal-like /
+standard-like / ambiguous）、每块 we/letMe 比例、planScore（we − letMe）、
+`Interesting` 晋升瞬态、收敛率——**未**在消融会话中复现。我们的计数
+（深度字符、互搏标记、词频）用的是另一把尺子。3.2–3.3 的数字彼此可比，
+**不与论文表格直接可比**；凡映射到论文实验的论断，3.4 会明确说明
+
 ### 3.2 双语 persona 矩阵（n=5，官方 API）
 
 同一读型 + 写型微任务，三种 persona 各 5 次请求：
@@ -157,9 +163,12 @@ let=29）与 D1（we=1, let=34）；B 与 A 会话早于该计数器。断言数
 
 1. **首轮锚定是唯一强机制。** A vs C1：thinking 多 6 万字符（+160%）。
    两工具表面下模型无法越过 `bash`/`edit` 行动，只能思考
-2. **DEEP 引导在 Flash 上中性。** D1（手动 DEEP 文本）vs B：+2.2K，在
-   ±30K 噪声带内。论文 P30 深度引导 "+12%" 是 Pro 数据；论文自己对 Flash
-   的观察（"c-closed ≈ b-directed"）在真实任务上得到证实
+2. **DEEP 引导对已饱和基线无效果。** D1（手动 DEEP 文本）vs B：+2.2K，在
+   ±30K 噪声带内。范围：B 的基线深度（32.1K）已接近论文"纯深度指令预算
+   耗尽"上限（P10：32.5K，0% 收敛）；论文的深度翻倍（9.7K → 18.4K，
+   P10 deep-react）是从 react 低基线 + 显式"then produce"绑定测得的。
+   DEEP 文本的增益只有低于该上限才有空间；本次消融不矛盾 P10，也不
+   适用于低基线场景
 3. **weak persona 叠加效应小。** C1 vs D1：+3.5K，在噪声内
 4. **互搏与 "I will" 是深度的副产物。** 两者随深度同步上升（28 → 117，
    30 → 72）。它们是长程推理的指纹，不是需要消除的缺陷
@@ -168,9 +177,9 @@ let=29）与 D1（we=1, let=34）；B 与 A 会话早于该计数器。断言数
 
 | 论断 | 本仓库状态 |
 |---|---|
-| Flash 在 weak 优于 spec（P11：+5.7 vs −2.0）| 采纳为默认模式选择；未端到端重测 |
-| 深度引导对 Flash 中性，P30（"c-closed ≈ b-directed"）| 在真实从零任务上证实（3.3）|
-| 锚定引导 we-track 轨迹（dsh-anchored-standard）| 轨迹未重测；深度效应为新发现（3.3）|
+| Flash 的弱 persona 区是路由窗口（P8-Flash：neutral +2.00、react-weak +4.67 判别）| 采纳为默认模式；未端到端重测 |
+| deep-react 从低基线使 Flash 深度翻倍，P10（9.7K → 18.4K，100% 收敛）| 未复现——我们的 B 基线已处于预算上限深度（3.3）|
+| 锚定引导 we-track 轨迹（dsh-anchored-standard）；Flash 轨迹层对目录免疫（论文 §5.2）| 轨迹未重测；深度效应（3.3）是另一维度——目录改深度、不改形态 |
 | 语言分层（persona 锁形态、system 定语言）| 新发现，超出论文全英文范围（3.2）|
 | DSH 用 `suppressedContextSources` 拦截注入 | 架构差异：OMP 整槽替换 system 数组，无需注入器（2）|
 
