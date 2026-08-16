@@ -177,6 +177,14 @@ Consequence for the default config: the persona shipped by the plugin is the
 paper's English persona; a Chinese persona comes from the user's own
 `AGENTS.md` (system layer), which the plugin does not override.
 
+Timeliness note (2026-08-16 evening): an n=10 rerun of this matrix hit
+direct-API drift — every condition (including the plain baseline) produced
+template-prefixed thinking ("We need respond to user…"), flattening the
+form discrimination. The n=5 numbers above and the n=10 rerun are not
+comparable; OMP-session thinking (3.3, E1/E2) did not drift. Direct-API
+form classification is time-sensitive (4.3 timeliness disclaimer applies
+in practice).
+
 ### 3.3 Ablation: four clean greenfield runs
 
 **Design.** The same greenfield task (implement a JavaScript shopping-cart
@@ -287,6 +295,47 @@ A partial Pro run (n=2, same budget, 2026-08-16) measured react ≈29.4K vs
 deep-react ≈31.0K (finish max_tokens ×2); the paper's Pro deep-converge scan
 is still marked incomplete upstream, and our n=2 is not enough to conclude
 anything about Pro.
+
+### 3.8 Causality, generalization, long horizon (2026-08-16 evening)
+
+Headless runs via `omp -p` (non-interactive OMP sessions, extension loaded —
+verified in the diagnostics log; sessions land in `~/.omp/agent/sessions/`).
+
+**E1 — hesitation causality (n=2 per guidance).** Same cart task, plugin
+default (weak + anchor + guide), only the tail text varies:
+
+| group | tail text | depth | hes | hes density | assertions |
+|---|---|---|---|---|---|
+| neutral | (none) | 77.0K / 35.2K | 119 / 27 | 1.55 / 0.77 /K | 40 / 29 |
+| inhibit | "Do not second-guess yourself…commit." | 0.8K / 26.9K | 0 / 12 | 0 / 0.45 /K | 26 / 31 |
+| encourage | "List candidate approaches, weigh, reject…" | 38.4K / 36.4K | 59 / 33 | 1.54 / 0.91 /K | 28 / 49 |
+
+Means: depth 56.1K / 13.9K / 37.4K; hes 73 / 6 / 46; assertions 34.5 / 28.5 /
+38.5 (neutral / inhibit / encourage). Inhibiting hesitation collapses depth
+(−75%) and completeness (−17%) and erases "I will" (0/0); encouraging explicit
+weighing yields the highest hesitation density and the highest completeness.
+Directionally, hesitation is coupled to reasoning depth and output
+completeness — it is not removable noise. Caveats: n=2 per cell; neutral
+within-group spread is ±42K (77.0K vs 35.2K).
+
+**E2 — task generalization (n=2).** The same conditions on a CSV-parser task
+(spec-determined: parse/toCSV/quoting rules, little design ambiguity):
+
+| group | depth | hes | assertions |
+|---|---|---|---|
+| plugin (weak + anchor + guide) | 16.0K / 42.7K | 13 / 47 | 20 / 25 |
+| native | 31.8K / 28.7K | 36 / 54 | 26 / 17 |
+
+The anchoring effect (+160% on the cart task, 3.3) does **not** reproduce:
+means 29.4K (plugin) vs 30.3K (native). The cart task carries design ambiguity
+(discount/coupon semantics, snapshot independence), the parser task is
+specification-determined — **task design density moderates the anchoring
+effect** (same shape as the paper's P2: simple tasks saturate). The +160%
+claim is scoped to design-heavy greenfield tasks.
+
+**E4 — long-horizon related chain (paper P21 design).** Eight sequential
+turns (write → fix → extend → fix → extend → fix → extend → fix) on the
+parser task, plugin vs native, n=2 each; results reported when complete.
 
 ## 4. Boundaries, environment, disclaimers
 
