@@ -33,15 +33,16 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 安装脚本把扩展拷贝到 `~/.omp/agent/extensions/`，若存在冲突的 SeekAnchor
 则移动到 `extensions-disabled/`。默认模式为 `weak`，重启后插件即生效
 
-命令（逃生口）：
+命令（高级选项，日常不需要——默认配置开箱即用）：
 
-```
-/dsr-mode weak      模型自分类（默认）
-/dsr-mode spec      计划先行 persona（维护/读代码类任务）
-/dsr-mode react     执行先行 persona（从零构建类任务）
-/dsr-mode native    本会话关闭插件
-/dsr-status         打印当前模式、persona 与引导状态
-```
+| 命令 | 作用 | 什么时候用 |
+|---|---|---|
+| （默认）| weak：模型自己判断任务类型（build 直接干 / fix 先查）| 永远——默认就够 |
+| `/dsr-mode spec` | 计划先行 | 维护/读代码类任务，想先看方案 |
+| `/dsr-mode react` | 执行先行 | 从零大项目，想直接写 |
+| `/dsr-mode native` | 完全关闭插件 | 对比实验 / 想用原生行为 |
+| `/dsr-resident on` | 第二轮起只留 4 个工具 | 不建议——E3 实测无差异 |
+| `/dsr-status` | 查看模式/persona/引导状态 | 想确认插件在做什么 |
 
 卸载：
 

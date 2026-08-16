@@ -43,15 +43,17 @@ The installer copies the extension to `~/.omp/agent/extensions/` and moves a
 conflicting SeekAnchor install to `extensions-disabled/` if present. The
 default mode is `weak`; the plugin is active immediately after restart.
 
-Commands (escape hatches, not required for daily use):
+Commands (advanced options — not needed daily; the default config is
+install-and-forget):
 
-```
-/dsr-mode weak      model self-classification (default)
-/dsr-mode spec      plan-first persona (maintenance / reading tasks)
-/dsr-mode react     execution-first persona (greenfield build tasks)
-/dsr-mode native    disable the plugin for this session
-/dsr-status         print current mode, persona, and guidance state
-```
+| command | effect | when to use |
+|---|---|---|
+| (default) | weak: the model classifies each task (build → produce, fix → inspect) | always — the default is enough |
+| `/dsr-mode spec` | plan-first persona | maintenance/reading tasks when you want a plan first |
+| `/dsr-mode react` | execution-first persona | greenfield projects when you want direct work |
+| `/dsr-mode native` | fully disable the plugin | comparison runs / native behavior |
+| `/dsr-resident on` | keep only 4 tools from round 2 | not recommended — E3 measured no difference |
+| `/dsr-status` | show mode/persona/guidance state | when you want to check what the plugin is doing |
 
 Uninstall:
 

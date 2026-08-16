@@ -72,6 +72,19 @@ export const GUIDE_DEEP = ' Think deeply about the architecture, edge cases, and
 /** Decision-closure tail — non-Flash models only (dsh-routing-suite Router Pro: decision-closure curbed black-hole reasoning 58K→27K, 2.1x, 100% action). */
 export const GUIDE_CLOSURE = ' End each reasoning block with a decision or an information need.'
 
+/**
+ * First-turn safety rules — cover the window where the user's AGENTS.md is
+ * not yet mounted (the anchor phase strips injections; anchored-standard
+ * lever 3). Form-neutral on purpose: no we/let leading, no task-style
+ * instruction, so the trajectory form is unaffected. Mounted only while
+ * the anchor phase is active (index.ts personaSystem), not after promote.
+ */
+export const SAFETY_RULES =
+  'Operating rules:\n'
+  + '- Never read credential or secret files (.env, .secrets, API keys, tokens). If the task needs one, say so in your reply instead.\n'
+  + '- No destructive actions (rm -rf, force operations, data deletion) without an explicit user request.\n'
+  + '- If the request is ambiguous or unsafe, do not act; summarize what is unclear in your reply.'
+
 // ── complexity heuristic ───────────────────────────────────────────────────
 
 const COMPLEX_RE = /(重构|架构|全面|详细|设计|系统|优化|分析|survey|overview|architecture|refactor|comprehensive|detailed|design|system|optimize|analyze)/i

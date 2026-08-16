@@ -20,7 +20,7 @@ import { appendFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { RouterState } from './state.ts'
-import { bandFor, coreFor, guideFor, isFlashModel, parseMode, personaFor, testinessFor, type Mode } from './core.ts'
+import { bandFor, coreFor, guideFor, isFlashModel, parseMode, personaFor, SAFETY_RULES, testinessFor, type Mode } from './core.ts'
 import { registerCommands } from './commands.ts'
 import { registerTools } from './tools.ts'
 
@@ -72,7 +72,10 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
     if (state.anchored && Array.isArray(event.systemPrompt) && event.systemPrompt.length > 0) {
       return [persona, ...event.systemPrompt]
     }
-    return [persona]
+    // First turn (anchor phase): pure persona + safety rules. AGENTS.md is
+    // stripped during the anchor (upstream lever 3), so the rules cover the
+    // credential/destructive-action window until the native system returns.
+    return [persona, SAFETY_RULES]
   }
 
   // ── session lifecycle ────────────────────────────────────────────────────

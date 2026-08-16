@@ -101,6 +101,7 @@ test('full lifecycle: weak mode anchors, guides, then promotes', async () => {
   const sp = Array.isArray(systemPrompt) ? systemPrompt.join('\n') : (systemPrompt ?? '')
   assert.match(sp, /helpful assistant/)
   assert.match(sp, /Think deeply first/)
+  assert.match(sp, /Never read credential or secret files/) // first-turn safety rules
   assert.deepEqual(getActiveTools(), ['bash', 'edit']) // RL-shape narrow surface
   assert.ok(events.some(([name, names]) => name === 'setActiveTools' && names.length === 2))
 
@@ -122,6 +123,7 @@ test('full lifecycle: weak mode anchors, guides, then promotes', async () => {
   assert.equal(secondSystem.length, 2) // [persona, native]
   assert.match(secondSystem[0], /helpful assistant/)
   assert.equal(secondSystem[1], 'OMP native system...') // memory/AGENTS.md restored
+  assert.ok(!secondSystem.join('\n').includes('Never read credential')) // safety rules first-turn only
   assert.deepEqual(getActiveTools(), ['bash', 'read', 'write', 'edit', 'glob', 'grep', 'web_search'])
 })
 
