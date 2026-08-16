@@ -63,6 +63,11 @@ Remove-Item -Recurse $env:USERPROFILE\.omp\agent\extensions\omp-ds-routing-suite
 #   move extensions-disabled\deepseek-rl-anchor back to extensions\
 ```
 
+**Conclusion for users.** Install, fully restart OMP, use the plugin —
+there is nothing to configure. The defaults (weak mode, anchor, guidance)
+are the measured optimum; the commands below are escape hatches for special
+situations, not daily tools.
+
 "Router: ..." lines that appear in the transcript after each user message are
 the injected guidance text, addressed to the model. They are not configuration
 prompts.
@@ -113,6 +118,13 @@ which is why dsh-routing-suite ships an injector and `suppressedContextSources`
 tables. In Oh My Pi the project `AGENTS.md` sits in the system array, so the
 persona swap is a wholesale replacement of that array slot; no runtime
 injector is needed. This is an architecture difference, not a porting shortcut.
+
+**Conclusion for users.** Three things happen automatically and you should
+not touch them: the first turn shows only 2 tools (the model thinks before
+it can act), each task is classified by the model itself, and one guidance
+line is injected per message. "Router: ..." lines are addressed to the model,
+not to you. The only lever with a measured effect is the mode switch
+(section 1) — and even that is optional: default `weak` fits most work.
 
 ## 3. Measurements & Evidence
 
@@ -428,6 +440,20 @@ does not improve output. Scope: per-turn isolated processes (cold start);
 the suite's design target is conversational long-horizon (same-session
 ledger resume), which this experiment does not cover.
 
+**Conclusion for users (what the evidence says about how you work).**
+
+- **Design-heavy greenfield tasks** (new projects, new features with
+  ambiguous requirements): this is where the plugin pays off — anchoring
+  deepens thinking ~2.6× and output completeness rises with it (3.3, E1).
+- **Spec-determined tasks** (well-defined, no design choices): the plugin is
+  neutral — no gain, no harm (E2). Just give the task.
+- **Long chains** (fix → extend → fix…): plugin chains produced ~78% more
+  tested assertions than native (E4-R). Keep the plugin on.
+- **Do not** enable `/dsr-resident on` (measured neutral, E3) or stack
+  external protocol suites on top (measured net overhead, F2).
+- **If the model seems to "think too long"** on a first turn: that is the
+  anchor working, not a hang; the second turn restores the full toolset.
+
 ## 4. Boundaries, environment, disclaimers
 
 ### 4.1 Environment (what was tested)
@@ -470,6 +496,13 @@ PowerShell 7-specific syntax is used.
 - **Quality.** The plugin does not guarantee output quality, correctness, or
   task success.
 
+**Conclusion for users.** All measurements come from Windows 11 + Oh My Pi
+with the official DeepSeek API on 2026-08-16. On other platforms, other
+harnesses, or after a DeepSeek model update, the numbers may not hold — the
+plugin itself is a thin input layer and cannot break anything, but its
+benefit is environment-dependent. If an effect "stops working" after a model
+update, re-check section 3 rather than the plugin.
+
 ## 5. Reproducing the measurements
 
 Persona matrix:
@@ -493,6 +526,12 @@ Ablation protocol (what the four groups did):
    guide (none vs manual tail text vs plugin).
 4. Run `analyze-thinking.mjs` on the resulting session jsonl; count test
    assertions in the produced `test.js`.
+
+**Conclusion for researchers.** Everything in section 3 is reproducible from
+this section plus `bench/` (scripts) and the session archives. The cheapest
+replication is: run the cart task (E1 neutral tail) twice in two empty
+directories — plugin on vs `/dsr-mode native` — and compare depth and
+assertions with `analyze-thinking.mjs`.
 
 ## 6. License & acknowledgements
 
