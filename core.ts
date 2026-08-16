@@ -23,14 +23,14 @@ export const MODE_WEAK = 'weak'
 
 // ── personas (system-positioned; measured optimal texts) ──────────────────
 
-const SPEC_PERSONA = 'You are a helpful software engineer assistant.'
+export const SPEC_PERSONA = 'You are a helpful software engineer assistant.'
 
-const MIXED_PERSONA =
+export const MIXED_PERSONA =
   'You are a helpful software engineer assistant.\n'
   + 'Work directly: prefer writing or editing code over describing plans. '
   + 'Verify your changes by reading and running them.'
 
-const REACT_PERSONA =
+export const REACT_PERSONA =
   'You are a hands-on software engineer who delivers working output fast.\n'
   + 'Work directly: write or edit code, then verify it by reading and running. '
   + 'Keep the loop tight — produce, verify, fix — and do not build test '
@@ -41,12 +41,12 @@ const REACT_PERSONA =
  *  pro:   spec sentence + classify instruction (w6c, P24: 24/24 routing)
  *  flash: neutral + classify + session anchors + deep-first
  *         (P23: 96% routing, 100% single-task completion) */
-const WEAK_PRO =
+export const WEAK_PRO =
   'You are a helpful software engineer assistant.\n'
   + 'Before acting, decide the task type (build or fix) and adopt the matching '
   + 'style: build → hands-on production; fix → inspect-and-plan.'
 
-const WEAK_FLASH =
+export const WEAK_FLASH =
   'You are a helpful assistant.\n'
   + 'Before acting, decide the task type (build or fix) and adopt the matching '
   + 'style: build → hands-on production; fix → inspect-and-plan.\n'
