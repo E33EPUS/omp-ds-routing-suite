@@ -313,22 +313,22 @@ occurs in Flash greenfield tasks, where thinking runs on doer tracks
 (option comparison) instead. Hesitation in Flash is decision weighing, not
 trajectory instability.
 
-**E1 — hesitation causality (n=2 per guidance).** Same cart task, plugin
+**E1 — hesitation causality (n=4 per guidance).** Same cart task, plugin
 default (weak + anchor + guide), only the tail text varies:
 
-| group | tail text | depth | hes | hes density | assertions |
+| group | tail text | depth | hes | hes density | tests |
 |---|---|---|---|---|---|
-| neutral | (none) | 77.0K / 35.2K | 119 / 27 | 1.55 / 0.77 /K | 40 / 29 |
-| inhibit | "Do not second-guess yourself…commit." | 0.8K / 26.9K | 0 / 12 | 0 / 0.45 /K | 26 / 31 |
-| encourage | "List candidate approaches, weigh, reject…" | 38.4K / 36.4K | 59 / 33 | 1.54 / 0.91 /K | 28 / 49 |
+| neutral | (none) | 77.0K / 35.2K / 24.4K / 7.9K | 119 / 27 / 18 / 7 | 1.55 / 0.77 / 0.74 / 0.89 | 20 / 19 / 21 / 10 |
+| inhibit | "Do not second-guess yourself…commit." | 0.8K / 26.9K / 6.0K / 31.9K | 0 / 12 / 2 / 45 | 0 / 0.45 / 0.33 / 1.41 | 13 / 16 / 15 / 12 |
+| encourage | "List candidate approaches, weigh, reject…" | 38.4K / 36.4K / 36.5K / 41.0K | 59 / 33 / 21 / 21 | 1.54 / 0.91 / 0.58 / 0.51 | 10 / 21 / 17 / 20 |
 
-Means: depth 56.1K / 13.9K / 37.4K; hes 73 / 6 / 46; assertions 34.5 / 28.5 /
-38.5 (neutral / inhibit / encourage). Inhibiting hesitation collapses depth
-(−75%) and completeness (−17%) and erases "I will" (0/0); encouraging explicit
-weighing yields the highest hesitation density and the highest completeness.
-Directionally, hesitation is coupled to reasoning depth and output
-completeness — it is not removable noise. Caveats: n=2 per cell; neutral
-within-group spread is ±42K (77.0K vs 35.2K).
+Means (neutral / inhibit / encourage): depth 36.1K / 16.4K / 38.1K; hes 42.8 /
+14.8 / 33.5; I will 38.0 / 12.3 / 40.5; tests 17.5 / 14.0 / ~17.0.
+Inhibiting hesitation lowers all four dimensions (depth −55%, hes −65%,
+I will −68%, tests −20%) at n=4 — hesitation is not removable noise.
+Encourage vs neutral shows no stable difference. Within-group spread stays
+large (±35K), but the inhibit-vs-neutral direction holds in all four
+samples.
 
 **E2 — task generalization (n=2).** The same conditions on a CSV-parser task
 (spec-determined: parse/toCSV/quoting rules, little design ambiguity):
