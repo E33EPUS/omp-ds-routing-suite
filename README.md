@@ -386,6 +386,31 @@ mechanism is think-then-targeted-read: deep guidance substitutes reasoning
 for exploratory tool use. Note the metrics differ from the paper's
 (fix-round success rate vs assertion counts).
 
+**F1 — J-Space protocol cross-check (2026-08-16 night).** An external
+inference-time control suite (J-Space Cognition Suite V3.6, Apache-2.0,
+skill-packaged protocol with a dense-track register ✓/?/✗ and explicit
+I/we-need semantics) was run on the same cart task: native + protocol (B×2)
+and plugin + protocol (C×2), each with a workspace copy of the suite so the
+model could load modules on demand:
+
+| session | condition | depth | hes | we/let | dense marks | tests |
+|---|---|---|---|---|---|---|
+| b1 / b2 | native + J-Space | 43.9K / 12.2K | 43 / 7 | 1/29, 0/11 | 131 / 21 | pass |
+| c1 / c2 | plugin + J-Space | 39.1K / 43.2K | 51 / 39 | 3/47, 0/31 | 118 / 112 | pass |
+| A (3.3) | plugin only | 72–98K | 113–119 | — | 0 | pass |
+
+Three findings. (1) The protocol self-bootstraps: models read SKILL.md and
+execute the dense track (21–131 ✓/?/✗ marks). (2) Dense marks do NOT replace
+implicit hesitation — both coexist (43/51/39 hmm/wait alongside 112–131
+marks); the "structured redirection" hypothesis fails, strengthening our E1
+conclusion (hesitation is intrinsic to deep reasoning). (3) Semantic form
+instructions do NOT change trajectory form: the protocol's I/we-need rules
+leave we-counts at 0–3 — trajectory form stays persona-determined, an
+independent cross-check of our form-locking results. Side note: dense-track
+compression lowers raw thinking chars (39–43K vs A's 72–98K) while marks
+rise — character depth alone underestimates compressed reasoning; dense-mark
+counting is a standard companion metric now.
+
 ## 4. Boundaries, environment, disclaimers
 
 ### 4.1 Environment (what was tested)
