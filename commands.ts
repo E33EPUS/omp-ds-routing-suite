@@ -47,6 +47,22 @@ export function registerCommands(pi: ExtensionAPI, services: CommandServices): v
     },
   })
 
+  pi.registerCommand('dsr-resident', {
+    description: 'Toggle promoted-catalog mode: on = resident narrow set (bash/edit/read/write), off = full native set',
+    getArgumentCompletions: (prefix: string) =>
+      ['on', 'off'].filter((value) => value.startsWith(prefix)).map((value) => ({ value, label: value })),
+    handler: async (args, ctx) => {
+      const token = args?.trim().toLowerCase()
+      if (token === 'on' || token === 'off') {
+        state.settings.resident = token === 'on'
+        state.persistSettings()
+        ctx.ui.notify(`Resident catalog: ${token === 'on' ? 'narrow (bash/edit/read/write)' : 'full native set'} (applies from the next anchor phase)`, 'info')
+        return
+      }
+      ctx.ui.notify(`Usage: /dsr-resident on|off (current: ${state.settings.resident ? 'on' : 'off'})`, 'warning')
+    },
+  })
+
   pi.registerCommand('dsr-status', {
     description: 'Show reasoning-mode router status',
     handler: async (_args, ctx) => {
@@ -57,7 +73,7 @@ export function registerCommands(pi: ExtensionAPI, services: CommandServices): v
           `model: ${services.modelId() ?? 'unknown'}`,
           `round: ${state.round} | anchored: ${state.anchored} | narrow: ${state.narrowEngaged}`,
           `first user text: ${state.firstUserText ? truncate(state.firstUserText, 60) : '(none yet)'}`,
-          `system: ${state.settings.systemMode} | guide: ${state.settings.guide} | anchor: ${state.settings.anchor}`,
+          `system: ${state.settings.systemMode} | guide: ${state.settings.guide} | anchor: ${state.settings.anchor} | resident: ${state.settings.resident ? 'on' : 'off'}`,
           `pending guide: ${state.pendingGuide ? 'yes' : 'no'}`,
           `active tools: ${safeActiveTools(pi).join(', ') || '(none)'}`,
           `settings file: ${state.settingsFile()}`,

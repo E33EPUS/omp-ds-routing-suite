@@ -6,6 +6,9 @@
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 process.env.DS_ROUTER_DIAG_LOG = 'off' // keep test runs out of the real diagnostics log
 import dsRouterSuite from '../index.ts'
 
@@ -50,6 +53,27 @@ async function runFlow(h, pi, steps) {
     if (step.capture) step.capture(result)
   }
 }
+
+test('resident mode promotes to the narrow set, not the full catalog', async () => {
+  const { pi, handlers, getActiveTools, events } = makePi()
+  const tmp = mkdtempSync(join(tmpdir(), 'dsr-test-'))
+  mkdirSync(join(tmp, '.omp', 'ds-routing-suite'), { recursive: true })
+  writeFileSync(
+    join(tmp, '.omp', 'ds-routing-suite', 'settings.json'),
+    JSON.stringify({ mode: 'weak', systemMode: 'replace', guide: true, anchor: true, resident: true }),
+  )
+  dsRouterSuite(pi)
+
+  await handlers.get('session_start')({ sessionId: 's-r' }, { cwd: tmp, model: { provider: 'deepseek-anthropic', id: 'deepseek-v4-flash' } })
+  await handlers.get('input')({ text: '写一个网页游戏' }, {})
+
+  await runFlow(handlers, pi, [{ name: 'before_agent_start', event: { systemPrompt: ['OMP native system...'] } }])
+  assert.deepEqual(getActiveTools(), ['bash', 'edit'])
+
+  await handlers.get('tool_result')({ toolName: 'bash', isError: false })
+  assert.deepEqual(getActiveTools(), ['bash', 'edit', 'read', 'write']) // resident narrow set
+  assert.ok(!events.some(([name, names]) => name === 'setActiveTools' && names.length === 7))
+})
 
 test('full lifecycle: weak mode anchors, guides, then promotes', async () => {
   const { pi, handlers, tools, commands, getActiveTools, events } = makePi()

@@ -20,6 +20,10 @@ export interface RouterSettings {
   guide: boolean
   /** First-turn tool anchoring on/off. */
   anchor: boolean
+  /** Promoted catalog: false = full native set (current default);
+   *  true = resident narrow set (bash/edit/read/write) — anchored-standard's
+   *  post-promotion regression guard. */
+  resident: boolean
 }
 
 export const DEFAULT_SETTINGS: RouterSettings = {
@@ -27,6 +31,7 @@ export const DEFAULT_SETTINGS: RouterSettings = {
   systemMode: 'replace',
   guide: true,
   anchor: true,
+  resident: false,
 }
 
 /** First-message classification with chat/empty fallback to weak. */

@@ -210,6 +210,15 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
 
   function restoreNativeTools(): void {
     try {
+      if (state.settings.resident) {
+        // Resident narrow set (anchored-standard's regression guard):
+        // bootstrap pair + read + write. Heavy tools (task, hub, ask,
+        // web_search) stay out unless the user opts out of resident mode.
+        void pi.setActiveTools(['bash', 'edit', 'read', 'write'])
+        log('restoreNativeTools resident -> [bash,edit,read,write]')
+        state.narrowEngaged = false
+        return
+      }
       // Merge the startup-captured list with the CURRENT active set so tools
       // that mount late (e.g. MCP servers) are not dropped by the restore.
       const current = pi.getActiveTools()
