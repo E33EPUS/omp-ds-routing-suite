@@ -1,6 +1,6 @@
 {
   "name": "omp-ds-routing-suite",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "DeepSeek reasoning-mode router for Oh My Pi: task-aware persona routing, first-turn tool anchoring, near-field guidance (ported from dsh-router-standard / dsh-mode-boost measured mechanisms)",
