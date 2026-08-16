@@ -411,6 +411,23 @@ compression lowers raw thinking chars (39–43K vs A's 72–98K) while marks
 rise — character depth alone underestimates compressed reasoning; dense-mark
 counting is a standard companion metric now.
 
+**F2 — long-horizon stacking (n=2, 8-turn parser chain, per-turn isolated
+processes).** Plugin + J-Space protocol (workspace copy + ledger controller)
+vs the E4-R plugin-only chains:
+
+| chain | condition | depth | hes | assertions |
+|---|---|---|---|---|
+| jspace-f1 / f2 | plugin + J-Space | 585.8K / 505.1K | 868 / 724 | 90 / 74 |
+| e4r-a1 / a2 | plugin only | 255.1K / 396.7K | 395 / 649 | 106 / 102 |
+
+Stacking J-Space on the plugin in cold-start long-horizon work costs +67%
+depth for −21% assertions (both chains agree) — a net overhead in our
+environment, opposite to the suite's claimed token-efficiency gain. The
+protocol self-bootstraps (loop gate + ledger + dense track executed) but
+does not improve output. Scope: per-turn isolated processes (cold start);
+the suite's design target is conversational long-horizon (same-session
+ledger resume), which this experiment does not cover.
+
 ## 4. Boundaries, environment, disclaimers
 
 ### 4.1 Environment (what was tested)
