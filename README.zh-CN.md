@@ -162,13 +162,14 @@ let=29）与 D1（we=1, let=34）；B 与 A 会话早于该计数器。断言数
 结论：
 
 1. **首轮锚定是唯一强机制。** A vs C1：thinking 多 6 万字符（+160%）。
-   两工具表面下模型无法越过 `bash`/`edit` 行动，只能思考
-2. **DEEP 引导对已饱和基线无效果。** D1（手动 DEEP 文本）vs B：+2.2K，在
-   ±30K 噪声带内。范围：B 的基线深度（32.1K）已接近论文"纯深度指令预算
-   耗尽"上限（P10：32.5K，0% 收敛）；论文的深度翻倍（9.7K → 18.4K，
-   P10 deep-react）是从 react 低基线 + 显式"then produce"绑定测得的。
-   DEEP 文本的增益只有低于该上限才有空间；本次消融不矛盾 P10，也不
-   适用于低基线场景
+   A 的首个 thinking 块单块 97.9K 字符（约 2.45 万 tokens，远低于 OMP 的
+   64K 预算，4.1）：两工具表面下模型无法行动，持续推理直到信息完备
+2. **DEEP 引导无独立效果。** D1（手动 DEEP 文本）vs B：+2.2K，在
+   ±30K 噪声带内。范围：B 的 32.1K 是自愿收敛点，不是预算上限——OMP
+   thinking 预算为 64K tokens（models.yml `maxTokens`），A 单块达到
+   2.45 万 tokens。本 README 早期版本称 B 匹配论文预算耗尽上限
+   （P10：32.5K）——那是数字巧合（论文的 32.5K 来自 8K token probe
+   预算，机制不同，见 3.7）
 3. **weak persona 叠加效应小。** C1 vs D1：+3.5K，在噪声内
 4. **互搏与 "I will" 是深度的副产物。** 两者随深度同步上升（28 → 117，
    30 → 72）。它们是长程推理的指纹，不是需要消除的缺陷
@@ -178,7 +179,7 @@ let=29）与 D1（we=1, let=34）；B 与 A 会话早于该计数器。断言数
 | 论断 | 本仓库状态 |
 |---|---|
 | Flash 的弱 persona 区是路由窗口（P8-Flash：neutral +2.00、react-weak +4.67 判别）| 采纳为默认模式；未端到端重测 |
-| deep-react 从低基线使 Flash 深度翻倍，P10（9.7K → 18.4K，100% 收敛）| 未复现——我们的 B 基线已处于预算上限深度（3.3）|
+| deep-react 从低基线使 Flash 深度翻倍，P10（9.7K → 18.4K，100% 收敛）| 未复现——8K 预算直连下所有条件全部吃满预算（3.7）；翻倍依赖论文的 react persona 文本提前收敛，与我们的 persona 文本不同 |
 | 锚定引导 we-track 轨迹（dsh-anchored-standard）；Flash 轨迹层对目录免疫（论文 §5.2）| 轨迹未重测；深度效应（3.3）是另一维度——目录改深度、不改形态 |
 | 语言分层（persona 锁形态、system 定语言）| 新发现，超出论文全英文范围（3.2）|
 | DSH 用 `suppressedContextSources` 拦截注入 | 架构差异：OMP 整槽替换 system 数组，无需注入器（2）|
@@ -190,14 +191,59 @@ doer 轨迹产出阶段：B 30 次、A 72 次，Flash 可复现。三个条件�
 native 模式（无 persona 形态锁定）、从零任务（无既有路径）、doer 轨迹
 （走出 we 盆地）。n=2 会话，按假设对待
 
+### 3.6 与上游实现的移植差异
+
+我们的移植与 dsh-anchored-standard 有四处已记录差异：
+
+| 上游（dsh-anchored-standard）| 我们 | 后果 |
+|---|---|---|
+| bootstrap 工具对：`bash` + `str_replace_editor`（Minimal 逐字节一致）| `bash` + `edit`（OMP 的 Anthropic 系 edit 工具）| 论文 B1（minimal + edit）2/2 锚定；非逐字节一致 |
+| 晋升：首次持久 `tool/call` **或** `assistant/message`（`promoteOn: either`）| 2026-08-16 起一致（纯文字首答也在请求 #2 晋升）| 已对齐 |
+| 晋升后目录：resident 集（bootstrap 对 + 发现工具 + 已解锁；重型工具一次 `dev_tool_search` 取用）| 晋升时恢复全量目录 | 上游"晋升后回退"警告适用（倒出完整目录会把轨迹拉回 standard-like）；我们的深度效应（3.3）在全量恢复下测得，晋升后轨迹形态未计数 |
+| bootstrap 上下文：只剥离 `agent-instructions` + `skill-catalog`，保留 Minimal persona system | 首轮整槽替换 system 数组为插件 persona；放行后恢复新鲜原生 system（`AGENTS.md` 等）| 比上游更激进；放行后保留用户记忆/AGENTS.md（这也是此前全替换记忆丢失 bug 的修复方式）|
+
+输出预算杠杆（`bootstrapMaxTokens`）未使用；工具 schema 杠杆与注入剥离
+杠杆均已生效
+
+### 3.7 P10 复现：固定预算下的深收敛（2026-08-16）
+
+直连 API 复现论文 L 表条件（Anthropic 端点，thinking 开启，预算 8000
+tokens，`max_tokens` 8192，购物车任务，每条件 n=3）：
+
+| 条件 | 深度（字符）| finish |
+|---|---|---|
+| react | 31,943 / 32,056 / 30,264 | max_tokens ×3 |
+| deep-react（react + "think deeply first, then produce"）| 31,355 / 31,790 / 31,455 | max_tokens ×3 |
+| deep1（"think deeply"）| 31,408 / 29,974 / 30,796 | max_tokens ×3 |
+| deep2（两阶段）| 30,031 / 31,348 | max_tokens ×2 |
+
+所有条件全部吃满 8K token 预算（约 3.1 万字符）；persona 与引导文本对
+深度的影响 <1%。两点后果：
+
+1. **固定小预算下，深度由预算决定，不由条件决定。** 论文的 deep-react
+   翻倍（9.7K → 18.4K）测自 API 自身 8192 `max_tokens` + 提前收敛的
+   react persona；我们移植的 react persona 文本不提前收敛，所有条件
+   撞同一上限。翻倍是 persona 文本特性，不是"think deeply"句子本身
+2. **OMP 会话消融（3.3）与此扫描不可比。** OMP thinking 预算 64K
+   tokens（4.1）；条件差异（32K → 98K）只在预算有余量时可见。8K
+   预算下所有条件饱和、差异消失——深度区分度需要预算余量，正如轨迹
+   区分度需要工具面（论文 §5.2）
+
+Pro 半程（n=2，同预算，2026-08-16）：react ≈29.4K vs deep-react ≈31.0K
+（finish max_tokens ×2）；上游自己的 Pro deep-converge 扫描仍未完成，
+我们的 n=2 不足以对 Pro 下结论
+
 ## 4. 边界、环境与免责声明
 
 ### 4.1 环境（实测范围）
 
 所有测量与跑分会话均运行于 Windows 11 + Oh My Pi（shell：Git Bash）。
-DSH、Linux、WSL 未测试。`install.ps1` 仅使用 Windows PowerShell 5.1 基础
-cmdlet（`Join-Path`、`Test-Path`、`New-Item`、`Copy-Item`、`Move-Item`、
-`Write-Host`），无 PowerShell 7 专属语法
+OMP 模型配置（`models.yml`）经 `maxTokens: 65536` + `defaultThinkingLevel:
+max` 设定 thinking 预算为 64K tokens——所有实测 thinking 块均远未触及
+（最深为 A 首块约 2.45 万 tokens，3.3）。DSH、Linux、WSL 未测试。
+`install.ps1` 仅使用 Windows PowerShell 5.1 基础 cmdlet（`Join-Path`、
+`Test-Path`、`New-Item`、`Copy-Item`、`Move-Item`、`Write-Host`），无
+PowerShell 7 专属语法
 
 ### 4.2 未验证事项
 

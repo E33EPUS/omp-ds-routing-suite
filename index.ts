@@ -184,6 +184,14 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
   // the first. message_end fires once per assistant message, so plain
   // logging cannot duplicate.
   pi.on('message_end', (event) => {
+    // promote-on-either (anchored-standard promoteOn: either): a text-only
+    // first reply also ends the anchor phase — request #2 sees the full
+    // catalog. Without this, a first response that never calls a tool keeps
+    // the session trapped on the two-tool surface.
+    if (state.settings.anchor && !state.anchored && state.narrowEngaged) {
+      state.anchored = true
+      restoreNativeTools()
+    }
     try {
       const msg = event.message as { content?: unknown[] } | undefined
       const blocks = msg?.content ?? []

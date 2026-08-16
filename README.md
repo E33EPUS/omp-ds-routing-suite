@@ -203,18 +203,20 @@ completeness; they rise with depth (25 → 41).
 Conclusions:
 
 1. **First-turn anchoring is the only strong mechanism.** A vs C1: +60K
-   characters of thinking (+160%). With a two-tool surface the model cannot
-   act beyond `bash`/`edit`, so it reasons instead. The earlier attribution of
-   the 98K figure to the DEEP guidance was wrong; the guidance contributes
-   within noise (D1 vs B: +2.2K).
-2. **DEEP guidance shows no effect on an already-saturated baseline.** D1
-   (manual DEEP text) vs B: +2.2K, inside the ±30K noise band. Scope: B's
-   baseline depth (32.1K) already matches the paper's budget-exhaustion
-   ceiling for deep-only instructions (P10: 32.5K at 0% convergence); the
-   paper's depth doubling (9.7K → 18.4K, P10 deep-react) was measured from a
-   react low baseline with an explicit "then produce" binding. Depth gain from
-   DEEP text has room only below that ceiling; this ablation does not
-   contradict P10 and does not transfer to low-baseline setups.
+   characters of thinking (+160%). A's first thinking block alone is 97.9K
+   chars (~24.5K tokens, far below the 64K OMP budget, 4.1): with a two-tool
+   surface the model cannot act, so it keeps reasoning until its information
+   is complete. The earlier attribution of the 98K figure to the DEEP
+   guidance was wrong; the guidance contributes within noise (D1 vs B:
+   +2.2K).
+2. **DEEP guidance shows no independent effect on this task.** D1 (manual
+   DEEP text) vs B: +2.2K, inside the ±30K noise band. Scope: B's 32.1K is a
+   voluntary convergence point, not a budget ceiling — the OMP thinking
+   budget is 64K tokens (models.yml `maxTokens`), and A reached 24.5K tokens
+   in a single block. An earlier draft of this README claimed B matched the
+   paper's budget-exhaustion ceiling (P10: 32.5K); that was a numeric
+   coincidence — the paper's 32.5K comes from an 8K-token probe budget, which
+   is a different mechanism (3.7).
 3. **weak persona stacking is small.** C1 vs D1: +3.5K, inside noise.
 4. **Hesitation and "I will" are byproducts of depth.** Both rise with depth
    across groups (28 → 117, 30 → 72). They are fingerprints of extended
@@ -238,15 +240,66 @@ in the production phase of doer trajectories on greenfield complex tasks: B
 mode (no persona form-lock), a greenfield task (no existing path), and a doer
 trajectory (outside the we-basin). n=2 sessions; treated as a hypothesis.
 
+### 3.6 Porting deltas vs upstream implementations
+
+Our port differs from dsh-anchored-standard in four documented ways:
+
+| upstream (dsh-anchored-standard) | ours | consequence |
+|---|---|---|
+| bootstrap pair: `bash` + `str_replace_editor` (Minimal, byte-identical) | `bash` + `edit` (OMP's Anthropic-family edit tool) | paper B1 (minimal + edit) anchored 2/2; not byte-identical to Minimal |
+| promote on first durable `tool/call` OR `assistant/message` (`promoteOn: either`) | same since 2026-08-16 (a text-only first reply promotes at request #2) | aligned |
+| promoted catalog: resident set (bootstrap pair + discovery tools + unlocked; heavy tools stay one `dev_tool_search` away) | full catalog restored on promotion | the upstream post-promotion regression warning (dumping the full catalog pulls the trajectory back to standard-like) applies; our depth effect (3.3) was measured under full restore, trajectory form after promotion was not counted |
+| bootstrap context: strip `agent-instructions` + `skill-catalog` only, keep the Minimal persona system prompt | first turn replaces the whole system array with the plugin persona; the fresh native system (`AGENTS.md` etc.) returns after promotion | more aggressive than upstream; preserves the user's memory/AGENTS.md after the anchor phase (this is also the fix for a prior full-replace memory-loss bug) |
+
+The output-budget lever (`bootstrapMaxTokens`) is not used; the tool-schema
+lever and the injection-strip lever are both active.
+
+### 3.7 P10 reproduction: deep-then-converge on a fixed budget (2026-08-16)
+
+Direct-API scan reproducing the paper's L-table conditions on our own
+credentials (Anthropic endpoint, `thinking` enabled, budget 8000 tokens,
+`max_tokens` 8192, the greenfield cart task, n=3 per condition):
+
+| condition | depth (chars) | finish |
+|---|---|---|
+| react | 31,943 / 32,056 / 30,264 | max_tokens ×3 |
+| deep-react (react + "think deeply first, then produce") | 31,355 / 31,790 / 31,455 | max_tokens ×3 |
+| deep1 ("think deeply") | 31,408 / 29,974 / 30,796 | max_tokens ×3 |
+| deep2 (two-phase) | 30,031 / 31,348 | max_tokens ×2 |
+
+Every condition exhausts the 8K-token budget (~31K chars); persona and
+guidance text change depth by <1%. Two consequences:
+
+1. **On a fixed small budget, depth is budget-bound, not condition-bound.**
+   The paper's deep-react doubling (9.7K → 18.4K) was measured on the API's
+   own 8192 `max_tokens` with a react persona that converges early; our
+   ported react persona text does not converge early, so all conditions hit
+   the same ceiling. The doubling is persona-text-specific, not a property of
+   the "think deeply" sentence alone.
+2. **The OMP-session ablation (3.3) is not comparable to this scan.** The OMP
+   thinking budget is 64K tokens (4.1); the condition differences there
+   (32K → 98K) are visible only because the budget leaves headroom. On an
+   8K budget every condition saturates and the differences disappear — depth
+   discrimination needs budget headroom, just as trajectory discrimination
+   needs a tool surface (paper §5.2).
+
+A partial Pro run (n=2, same budget, 2026-08-16) measured react ≈29.4K vs
+deep-react ≈31.0K (finish max_tokens ×2); the paper's Pro deep-converge scan
+is still marked incomplete upstream, and our n=2 is not enough to conclude
+anything about Pro.
+
 ## 4. Boundaries, environment, disclaimers
 
 ### 4.1 Environment (what was tested)
 
 All measurements and benchmark sessions ran on Windows 11 with Oh My Pi (shell:
-Git Bash). DSH, Linux, and WSL were not tested. `install.ps1` uses only base
-cmdlets available in Windows PowerShell 5.1 (`Join-Path`, `Test-Path`,
-`New-Item`, `Copy-Item`, `Move-Item`, `Write-Host`); no PowerShell 7-specific
-syntax is used.
+Git Bash). The OMP model config (`models.yml`) sets the thinking budget via
+`maxTokens: 65536` with `defaultThinkingLevel: max` — the budget is 64K
+tokens, and no measured block approached it (the deepest, A's first block, is
+~24.5K tokens, 3.3). DSH, Linux, and WSL were not tested. `install.ps1` uses
+only base cmdlets available in Windows PowerShell 5.1 (`Join-Path`,
+`Test-Path`, `New-Item`, `Copy-Item`, `Move-Item`, `Write-Host`); no
+PowerShell 7-specific syntax is used.
 
 ### 4.2 Unverified claims
 

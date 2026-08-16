@@ -69,7 +69,7 @@ export const GUIDE_COMMIT = ' Think deeply first, then commit and act.'
 /** Directed deep tail for complex tasks (P10: deep must pair with a convergence instruction). */
 export const GUIDE_DEEP = ' Think deeply about the architecture, edge cases, and integration points. Do not spend reasoning on the environment or tooling. Produce when your information is complete.'
 
-/** Decision-closure tail — non-Flash models only (P10 deep-react design). */
+/** Decision-closure tail — non-Flash models only (dsh-routing-suite Router Pro: decision-closure curbed black-hole reasoning 58K→27K, 2.1x, 100% action). */
 export const GUIDE_CLOSURE = ' End each reasoning block with a decision or an information need.'
 
 // ── complexity heuristic ───────────────────────────────────────────────────
