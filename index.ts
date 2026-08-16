@@ -166,12 +166,37 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
     if (state.narrowEngaged) restoreNativeTools()
   })
 
+  // ── thinking capture: record the head of each reasoning block ────────────
+  // (diagnostics only; lets us verify "We need" vs "Let me" trajectories)
+  const seenThinking = new Set<string>()
+  pi.on('message_end', (event) => {
+    try {
+      const msg = event.message as { id?: string; content?: unknown[] } | undefined
+      const id = msg?.id ?? '?'
+      if (seenThinking.has(id)) return
+      const blocks = msg?.content ?? []
+      for (const block of blocks) {
+        const b = block as { type?: string; thinking?: string } | undefined
+        if (b?.type === 'thinking' && typeof b.thinking === 'string' && b.thinking.trim()) {
+          seenThinking.add(id)
+          const head = b.thinking.slice(0, 150).replace(/\s+/g, ' ')
+          log(`thinking[${id}] ${head}…`)
+          break
+        }
+      }
+    } catch {
+      // diagnostics only
+    }
+  })
+
   function restoreNativeTools(): void {
     try {
-      if (state.nativeToolNames.length > 0) {
-        void pi.setActiveTools([...state.nativeToolNames])
-        log(`restoreNativeTools -> [${state.nativeToolNames.join(',')}]`)
-      }
+      // Merge the startup-captured list with the CURRENT active set so tools
+      // that mount late (e.g. MCP servers) are not dropped by the restore.
+      const current = pi.getActiveTools()
+      const merged = [...new Set([...state.nativeToolNames, ...current])]
+      void pi.setActiveTools(merged)
+      log(`restoreNativeTools -> [${merged.join(',')}]`)
     } catch {
       // Ignore — the catalog will refresh on the next agent start.
     }
