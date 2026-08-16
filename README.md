@@ -335,7 +335,23 @@ claim is scoped to design-heavy greenfield tasks.
 
 **E4 — long-horizon related chain (paper P21 design).** Eight sequential
 turns (write → fix → extend → fix → extend → fix → extend → fix) on the
-parser task, plugin vs native, n=2 each; results reported when complete.
+parser task, plugin vs native, n=2 each:
+
+| session | condition | read-class calls | fix turns read-first | assertions |
+|---|---|---|---|---|
+| e4-a1 / a2 | plugin | 30% / 44% | 1/3, 2/4 | 36 / 35 |
+| e4-b1 / b2 | native | 67% / 63% | 3/4, 2/3 | 29 / 30 |
+
+Directionally consistent with the paper's P21 (guidance lowers read
+continuity): plugin sessions read the existing code less (37% avg vs 65%).
+But the paper's "guidance is negative in related chains" does not reproduce
+at the output level — plugin sessions finished all 8 turns with more
+assertions (35.5 avg vs 29.5). Caveats: `omp -p` merges the eight message
+files into one batched request (model processes the 8 tasks in sequence
+within one session), not the paper's per-turn interaction; in batching,
+code read in early turns is already in context, so low read continuity is
+not ignorance of the code. A true per-turn chain (interactive OMP session)
+is out of scope here.
 
 ## 4. Boundaries, environment, disclaimers
 
