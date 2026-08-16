@@ -266,8 +266,9 @@ Ablation protocol (what the four groups did):
 
 ## 6. License & acknowledgements
 
-MIT. Guidance texts and personas derive from
-[yjh051108/dsh-routing-suite](https://github.com/yjh051108/dsh-routing-suite)
-(which bundles dsh-mode-boost), acknowledging
+MIT. 
+Guidance texts and personas derive from
+[yjh051108/dsh-routing-suite](https://github.com/yjh051108/dsh-routing-suite)(which bundles dsh-mode-boost)
+acknowledging
 [xiaobright/dsh-anchored-standard](https://github.com/xiaobright/dsh-anchored-standard)
 for the anchoring mechanism.
