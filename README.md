@@ -333,6 +333,21 @@ specification-determined — **task design density moderates the anchoring
 effect** (same shape as the paper's P2: simple tasks saturate). The +160%
 claim is scoped to design-heavy greenfield tasks.
 
+**E3 — resident catalog comparison (n=2).** Cart task, plugin default;
+variable: promoted catalog = full native set vs resident narrow set
+(`/dsr-resident on` / settings `{"resident": true}`, verified in the
+diagnostics log: `restoreNativeTools resident -> [bash,edit,read,write]`):
+
+| session | promoted catalog | depth | hes | assertions |
+|---|---|---|---|---|
+| res1 / res2 | full (off) | 20.5K / 37.8K | 35 / 32 | 25 / 27 |
+| res3 / res4 | narrow (on) | 13.9K / 73.1K | 4 / 90 | 38 / 38 |
+
+Completeness is consistently higher with the resident narrow set (38 vs
+25/27, +46%, both runs identical) — weak support for the upstream
+post-promotion regression warning at the output level. Depth and hesitation
+spread (±60K) is too large for a conclusion at n=2.
+
 **E4 — long-horizon related chain (paper P21 design).** Eight sequential
 turns (write → fix → extend → fix → extend → fix → extend → fix) on the
 parser task, plugin vs native, n=2 each:
