@@ -20,6 +20,12 @@ inside dsh-routing-suite:
 and its
 [experiments.md](https://github.com/yjh051108/dsh-router-standard/blob/main/docs/experiments.md).
 
+**TL;DR.** Install (section 1), then just use it: the plugin classifies each
+task, anchors the first turn to two tools, and injects per-turn guidance.
+Measured on Flash (2026-08-16, official API): first-turn anchoring is the only
+strong effect (+160% thinking depth, n=1); DEEP guidance and weak persona sit
+within noise. Windows 11 + Oh My Pi only (4.1). Evidence in section 3.
+
 ## 1. Install & Quick Start
 
 ```powershell
@@ -55,6 +61,23 @@ Remove-Item -Recurse $env:USERPROFILE\.omp\agent\extensions\omp-ds-routing-suite
 "Router: ..." lines that appear in the transcript after each user message are
 the injected guidance text, addressed to the model. They are not configuration
 prompts.
+
+### Linux / macOS (manual install)
+
+The extension is a plain directory; copy it by hand:
+
+```sh
+mkdir -p ~/.omp/agent/extensions/omp-ds-routing-suite
+cp index.ts core.ts state.ts commands.ts tools.ts \
+  ~/.omp/agent/extensions/omp-ds-routing-suite/
+# if SeekAnchor is installed:
+mv ~/.omp/agent/extensions/deepseek-rl-anchor \
+  ~/.omp/agent/extensions-disabled/
+```
+
+Not measured on Linux/macOS (4.1); the runtime has no platform-specific code
+paths. `install.ps1` targets Windows PowerShell (5.1+); PowerShell Core on
+Linux sets no `$env:USERPROFILE`, so prefer the manual steps there.
 
 ## 2. Mechanisms
 

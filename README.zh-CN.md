@@ -15,6 +15,11 @@
 [paper.md](https://github.com/yjh051108/dsh-router-standard/blob/main/docs/paper.md)
 与 [experiments.md](https://github.com/yjh051108/dsh-router-standard/blob/main/docs/experiments.md)
 
+**速览。** 装完（第 1 节）直接用：插件自动分类任务、首轮锚定两工具、逐轮注入
+引导。Flash 实测（2026-08-16，官方 API）：首轮锚定是唯一强效应（深度
++160%，n=1）；DEEP 引导与 weak persona 在噪声内。仅 Windows 11 + OMP
+（4.1）。证据见第 3 节
+
 ## 1. 安装与快速开始
 
 ```powershell
@@ -44,7 +49,24 @@ Remove-Item -Recurse $env:USERPROFILE\.omp\agent\extensions\omp-ds-routing-suite
 ```
 
 对话中每条用户消息后出现的 "Router: ..." 行是注入给模型的引导文本，不是
-配置提示。
+配置提示
+
+### Linux / macOS（手动安装）
+
+扩展就是普通目录，手动拷贝：
+
+```sh
+mkdir -p ~/.omp/agent/extensions/omp-ds-routing-suite
+cp index.ts core.ts state.ts commands.ts tools.ts \
+  ~/.omp/agent/extensions/omp-ds-routing-suite/
+# 若装了 SeekAnchor：
+mv ~/.omp/agent/extensions/deepseek-rl-anchor \
+  ~/.omp/agent/extensions-disabled/
+```
+
+Linux/macOS 未实测（4.1）；运行时无平台相关代码。`install.ps1` 面向
+Windows PowerShell（5.1+）；Linux 的 PowerShell Core 不设 `$env:USERPROFILE`，
+请用手动步骤
 
 ## 2. 机制
 
