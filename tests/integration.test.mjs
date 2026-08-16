@@ -6,6 +6,7 @@
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+process.env.DS_ROUTER_DIAG_LOG = 'off' // keep test runs out of the real diagnostics log
 import dsRouterSuite from '../index.ts'
 
 /** Minimal fake of the OMP ExtensionAPI surface the suite touches. */
@@ -65,7 +66,7 @@ test('full lifecycle: weak mode anchors, guides, then promotes', async () => {
   assert.ok(commands.some((c) => c.name === 'dsr-status'))
 
   // 1. session_start: capture native tools
-  await handlers.get('session_start')({ sessionId: 's1' }, { cwd: 'D:/tmp/proj' })
+  await handlers.get('session_start')({ sessionId: 's1' }, { cwd: 'D:/tmp/proj', model: { provider: 'deepseek-anthropic', id: 'deepseek-v4-flash' } })
 
   // 2. user input: build task
   await handlers.get('input')({ text: '写一个网页游戏' }, {})
@@ -99,7 +100,7 @@ test('full lifecycle: weak mode anchors, guides, then promotes', async () => {
 test('complex task gets deep guidance with no closure on Flash', async () => {
   const { pi, handlers } = makePi()
   dsRouterSuite(pi)
-  await handlers.get('session_start')({ sessionId: 's2' }, { cwd: 'D:/tmp/proj' })
+  await handlers.get('session_start')({ sessionId: 's2' }, { cwd: 'D:/tmp/proj', model: { provider: 'deepseek-anthropic', id: 'deepseek-v4-flash' } })
   await handlers.get('input')({ text: '设计一个系统的架构，包括详细设计文档' }, {})
   const payload = { messages: [{ role: 'user', content: '设计一个系统的架构' }] }
   const returned = await handlers.get('before_provider_request')({ payload })
@@ -110,7 +111,7 @@ test('complex task gets deep guidance with no closure on Flash', async () => {
 test('chat message gets no guidance and no anchor change', async () => {
   const { pi, handlers, getActiveTools } = makePi()
   dsRouterSuite(pi)
-  await handlers.get('session_start')({ sessionId: 's3' }, { cwd: 'D:/tmp/proj' })
+  await handlers.get('session_start')({ sessionId: 's3' }, { cwd: 'D:/tmp/proj', model: { provider: 'deepseek-anthropic', id: 'deepseek-v4-flash' } })
   await handlers.get('input')({ text: '你好' }, {})
   const payload = { messages: [{ role: 'user', content: '你好' }] }
   const returned = await handlers.get('before_provider_request')({ payload })
@@ -118,10 +119,28 @@ test('chat message gets no guidance and no anchor change', async () => {
   assert.deepEqual(getActiveTools(), ['bash', 'read', 'write', 'edit', 'glob', 'grep', 'web_search']) // untouched
 })
 
+test('slash command input is not counted as a user task', async () => {
+  const { pi, handlers } = makePi()
+  dsRouterSuite(pi)
+  await handlers.get('session_start')({ sessionId: 's5' }, { cwd: 'D:/tmp/proj', model: { provider: 'deepseek-anthropic', id: 'deepseek-v4-flash' } })
+  await handlers.get('input')({ text: '/dsr-status' }, {})
+  const payload = { messages: [{ role: 'user', content: '/dsr-status' }] }
+  const returned = await handlers.get('before_provider_request')({ payload })
+  assert.equal(returned.messages.length, 1) // no guidance appended for commands
+
+  // next real message is round 1 -> GUIDE_BASE, not boost
+  await handlers.get('input')({ text: '写一个网页游戏' }, {})
+  const payload2 = { messages: [{ role: 'user', content: '写一个网页游戏' }] }
+  const returned2 = await handlers.get('before_provider_request')({ payload: payload2 })
+  assert.equal(returned2.messages.length, 2)
+  assert.match(returned2.messages[1].content, /classify this task \(build or fix\) now/)
+  assert.doesNotMatch(returned2.messages[1].content, /NEW task/)
+})
+
 test('native mode leaves everything alone', async () => {
   const { pi, handlers, tools, getActiveTools } = makePi()
   dsRouterSuite(pi)
-  await handlers.get('session_start')({ sessionId: 's4' }, { cwd: 'D:/tmp/proj' })
+  await handlers.get('session_start')({ sessionId: 's4' }, { cwd: 'D:/tmp/proj', model: { provider: 'deepseek-anthropic', id: 'deepseek-v4-flash' } })
 
   // switch to native via the dev_router_mode tool
   const def = tools.find((t) => t.name === 'dev_router_mode')

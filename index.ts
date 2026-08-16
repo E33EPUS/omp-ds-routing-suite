@@ -27,6 +27,7 @@ import { registerTools } from './tools.ts'
 /** Best-effort diagnostics log (never throws). */
 const DIAG_LOG = join(homedir(), '.omp', 'logs', 'ds-router-suite.log')
 function log(msg: string): void {
+  if (process.env.DS_ROUTER_DIAG_LOG === 'off') return
   try {
     appendFileSync(DIAG_LOG, `${new Date().toISOString()} ${msg}\n`)
   } catch {
@@ -34,24 +35,24 @@ function log(msg: string): void {
   }
 }
 
+/** Model id from the most recent event context (ExtensionAPI has no .model). */
+function modelIdFromCtx(ctx: unknown): string | null {
+  try {
+    const c = ctx as { model?: { id?: string; provider?: string } } | undefined
+    if (c?.model?.id) return c.model.id
+    if (c?.model?.provider) return c.model.provider
+  } catch {
+    // ignore
+  }
+  return null
+}
+
 export default function dsRouterSuite(pi: ExtensionAPI): void {
   const state = new RouterState()
+  let lastModelId: string | null = null
   log('loaded: factory running')
 
-  const modelId = (): string | null => {
-    try {
-      const m = pi.model
-      if (m && typeof m === 'object') {
-        const id = (m as { id?: string }).id
-        if (id) return id
-        const provider = (m as { provider?: string }).provider
-        if (provider) return provider
-      }
-    } catch {
-      // ctx.model is unavailable in some runtimes; treat as unknown.
-    }
-    return null
-  }
+  const modelId = (): string | null => lastModelId
 
   const currentMode = (): Mode => {
     const mode = state.effectiveMode()
@@ -72,17 +73,21 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
   // ── session lifecycle ────────────────────────────────────────────────────
   pi.on('session_start', async (event, ctx) => {
     const cwd = ctx.cwd ?? process.cwd()
+    const m = modelIdFromCtx(ctx)
+    if (m) lastModelId = m
     state.resetForSession(event.sessionId ?? null, cwd)
     try {
       state.nativeToolNames = [...pi.getActiveTools()]
     } catch {
       state.nativeToolNames = []
     }
-    log(`session_start id=${state.sessionId ?? '?'} cwd=${cwd} tools=[${state.nativeToolNames.join(',')}]`)
+    log(`session_start id=${state.sessionId ?? '?'} model=${lastModelId ?? '?'} cwd=${cwd} tools=[${state.nativeToolNames.join(',')}]`)
   })
 
   pi.on('session_branch', async (event, ctx) => {
     const cwd = ctx.cwd ?? process.cwd()
+    const m = modelIdFromCtx(ctx)
+    if (m) lastModelId = m
     state.resetForSession(event.sessionId ?? null, cwd)
     try {
       state.nativeToolNames = [...pi.getActiveTools()]
@@ -93,10 +98,17 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
   })
 
   // ── user input: round counting + near-field guidance queue ──────────────
-  pi.on('input', async (event, _ctx) => {
+  pi.on('input', async (event, ctx) => {
     const text = extractInputText(event)
     log(`input event=${safeEventShape(event)} text=${text ? JSON.stringify(text.slice(0, 80)) : 'null'}`)
     if (!text) return
+    const trimmed = text.trim()
+    if (trimmed.startsWith('/')) {
+      log(`input skip (slash command): ${JSON.stringify(trimmed.slice(0, 40))}`)
+      return // slash commands are not user tasks
+    }
+    const m = modelIdFromCtx(ctx)
+    if (m) lastModelId = m
     state.onUserInput(text)
     const mode = currentMode()
     if (mode === 'native') return
