@@ -214,8 +214,11 @@ node bench/analyze-thinking.mjs ~/.omp/agent/sessions/--D--bench-cart-*/<session
 
 ## 6. 许可证与致谢
 
-MIT。引导文本与 persona 派生自
+MIT
+
+引导文本与 persona 派生自
 [yjh051108/dsh-routing-suite](https://github.com/yjh051108/dsh-routing-suite)（内含 dsh-mode-boost）
+
 致谢
 [xiaobright/dsh-anchored-standard](https://github.com/xiaobright/dsh-anchored-standard)
 的锚定机制。
