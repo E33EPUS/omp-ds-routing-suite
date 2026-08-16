@@ -170,19 +170,19 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
 
   // ── thinking capture: record the head of each reasoning block ────────────
   // (diagnostics only; lets us verify "We need" vs "Let me" trajectories)
-  const seenThinking = new Set<string>()
+  // NOTE: no dedup keyed on message id — message_end snapshots carry no
+  // reliable id here, so keying on it silently dropped every block after
+  // the first. message_end fires once per assistant message, so plain
+  // logging cannot duplicate.
   pi.on('message_end', (event) => {
     try {
-      const msg = event.message as { id?: string; content?: unknown[] } | undefined
-      const id = msg?.id ?? '?'
-      if (seenThinking.has(id)) return
+      const msg = event.message as { content?: unknown[] } | undefined
       const blocks = msg?.content ?? []
       for (const block of blocks) {
         const b = block as { type?: string; thinking?: string } | undefined
         if (b?.type === 'thinking' && typeof b.thinking === 'string' && b.thinking.trim()) {
-          seenThinking.add(id)
           const head = b.thinking.slice(0, 150).replace(/\s+/g, ' ')
-          log(`thinking[${id}] ${head}…`)
+          log(`thinking ${head}…`)
           break
         }
       }
