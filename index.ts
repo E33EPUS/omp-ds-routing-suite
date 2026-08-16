@@ -152,6 +152,15 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
       log(`before_provider_request payload? ${payload ? 'no messages array' : 'no payload'}`)
       return payload
     }
+    // Native mode: never inject — and drop any guide queued before the
+    // mode switch (a stale pendingGuide must not leak into a native session).
+    if (currentMode() === 'native') {
+      if (state.pendingGuide) {
+        state.pendingGuide = null
+        log('before_provider_request native: dropped stale pendingGuide')
+      }
+      return payload
+    }
     log(`before_provider_request messages=${(payload.messages as unknown[]).length} pendingGuide=${state.pendingGuide !== null}`)
     if (state.pendingGuide) {
       ;(payload.messages as unknown[]).push({ role: 'user', content: state.pendingGuide })

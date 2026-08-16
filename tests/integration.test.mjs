@@ -141,6 +141,22 @@ test('slash command input is not counted as a user task', async () => {
   assert.doesNotMatch(returned2.messages[1].content, /NEW task/)
 })
 
+test('native mode drops stale pendingGuide without injecting', async () => {
+  const { pi, handlers, tools } = makePi()
+  dsRouterSuite(pi)
+  await handlers.get('session_start')({ sessionId: 's6' }, { cwd: 'D:/tmp/proj' })
+  // queue a guide on a weak-mode message
+  await handlers.get('input')({ text: '写一个网页游戏' }, {})
+  // switch to native via the tool
+  const def = tools.find((t) => t.name === 'dev_router_mode')
+  await def.execute('id', { mode: 'native' })
+  // provider request must NOT carry the stale guide
+  const payload = { messages: [{ role: 'user', content: '任务' }] }
+  const returned = await handlers.get('before_provider_request')({ payload })
+  assert.equal(returned.messages.length, 1) // no injection
+  assert.doesNotMatch(returned.messages[0].content, /Router:/)
+})
+
 test('native mode leaves everything alone', async () => {
   const { pi, handlers, tools, getActiveTools } = makePi()
   dsRouterSuite(pi)
