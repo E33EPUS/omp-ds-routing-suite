@@ -9,12 +9,13 @@ interface CommandServices {
   state: RouterState
   modelId: () => string | null
   currentMode: () => unknown
+  log: (msg: string) => void
 }
 
 const MODE_NAMES = ['weak', 'spec', 'react', 'native', 'auto']
 
 export function registerCommands(pi: ExtensionAPI, services: CommandServices): void {
-  const { state } = services
+  const { state, log } = services
 
   pi.registerCommand('dsr-mode', {
     description: 'Set the reasoning-mode router: weak (model classifies) | spec (plan-first) | react (doer) | native (off) | auto (classify first message) | 0-100 | 0.0-1.0',
@@ -23,6 +24,7 @@ export function registerCommands(pi: ExtensionAPI, services: CommandServices): v
         .filter((value) => value.startsWith(prefix))
         .map((value) => ({ value, label: value })),
     handler: async (args, ctx) => {
+      log(`dsr-mode invoked args=${JSON.stringify(args ?? '')}`)
       const token = args?.trim()
       if (!token) {
         ctx.ui.notify(`Usage: /dsr-mode <${MODE_NAMES.join('|')}|0-100|0.0-1.0> (current: ${describeMode(state)})`, 'warning')
@@ -48,6 +50,7 @@ export function registerCommands(pi: ExtensionAPI, services: CommandServices): v
   pi.registerCommand('dsr-status', {
     description: 'Show reasoning-mode router status',
     handler: async (_args, ctx) => {
+      log('dsr-status invoked')
       ctx.ui.notify(
         [
           `mode: ${describeMode(state)}`,

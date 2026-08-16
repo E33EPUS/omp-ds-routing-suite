@@ -10,10 +10,11 @@ interface ToolServices {
   state: RouterState
   modelId: () => string | null
   currentMode: () => unknown
+  log: (msg: string) => void
 }
 
 export function registerTools(pi: ExtensionAPI, services: ToolServices): void {
-  const { state } = services
+  const { state, log } = services
   const z = pi.zod
 
   pi.registerTool({
@@ -22,6 +23,7 @@ export function registerTools(pi: ExtensionAPI, services: ToolServices): void {
     description: "Show this session's reasoning-mode routing: mode, band, persona, first-turn core tools, anchor state, and whether an override is active.",
     parameters: z.object({}),
     async execute() {
+      log('dev_router_status invoked')
       const mode = state.effectiveMode()
       if (mode === 'native') {
         return { content: [{ type: 'text', text: 'router-mode=native (router off — native OMP composition)' }], details: {} }

@@ -16,13 +16,27 @@
  * quantize to the measured bands.
  */
 import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent'
+import { appendFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
 import { RouterState } from './state.ts'
 import { bandFor, coreFor, guideFor, isFlashModel, parseMode, personaFor, testinessFor, type Mode } from './core.ts'
 import { registerCommands } from './commands.ts'
 import { registerTools } from './tools.ts'
 
+/** Best-effort diagnostics log (never throws). */
+const DIAG_LOG = join(homedir(), '.omp', 'logs', 'ds-router-suite.log')
+function log(msg: string): void {
+  try {
+    appendFileSync(DIAG_LOG, `${new Date().toISOString()} ${msg}\n`)
+  } catch {
+    // diagnostics must never break the agent loop
+  }
+}
+
 export default function dsRouterSuite(pi: ExtensionAPI): void {
   const state = new RouterState()
+  log('loaded: factory running')
 
   const modelId = (): string | null => {
     try {
@@ -64,6 +78,7 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
     } catch {
       state.nativeToolNames = []
     }
+    log(`session_start id=${state.sessionId ?? '?'} cwd=${cwd} tools=[${state.nativeToolNames.join(',')}]`)
   })
 
   pi.on('session_branch', async (event, ctx) => {
@@ -74,11 +89,13 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
     } catch {
       state.nativeToolNames = []
     }
+    log(`session_branch id=${state.sessionId ?? '?'}`)
   })
 
   // ── user input: round counting + near-field guidance queue ──────────────
   pi.on('input', async (event, _ctx) => {
     const text = extractInputText(event)
+    log(`input event=${safeEventShape(event)} text=${text ? JSON.stringify(text.slice(0, 80)) : 'null'}`)
     if (!text) return
     state.onUserInput(text)
     const mode = currentMode()
@@ -91,6 +108,7 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
   // ── agent start: persona mount + first-turn tool anchoring ──────────────
   pi.on('before_agent_start', async (event) => {
     const mode = currentMode()
+    log(`before_agent_start mode=${mode} anchored=${state.anchored} narrow=${state.narrowEngaged} spType=${typeof event.systemPrompt} spLen=${Array.isArray(event.systemPrompt) ? event.systemPrompt.length : String(event.systemPrompt ?? '').length}`)
     if (mode === 'native') return undefined
     if (state.nativeSystemPrompt === null && typeof event.systemPrompt === 'string') {
       state.nativeSystemPrompt = event.systemPrompt
@@ -99,10 +117,12 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
     if (state.settings.anchor && !state.anchored) {
       const core = coreFor(mode)
       try {
-        pi.setActiveTools(core)
+        await pi.setActiveTools(core)
         state.narrowEngaged = true
-      } catch {
+        log(`before_agent_start narrow -> [${core.join(',')}]`)
+      } catch (err) {
         state.narrowEngaged = false
+        log(`before_agent_start setActiveTools FAILED: ${err instanceof Error ? err.message : String(err)}`)
       }
     } else if (state.narrowEngaged && state.anchored) {
       restoreNativeTools()
@@ -114,7 +134,11 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
   // ── provider request: inject pending near-field guidance ────────────────
   pi.on('before_provider_request', (event) => {
     const payload = event.payload as Record<string, unknown> | undefined
-    if (!payload || !Array.isArray(payload.messages)) return payload
+    if (!payload || !Array.isArray(payload.messages)) {
+      log(`before_provider_request payload? ${payload ? 'no messages array' : 'no payload'}`)
+      return payload
+    }
+    log(`before_provider_request messages=${(payload.messages as unknown[]).length} pendingGuide=${state.pendingGuide !== null}`)
     if (state.pendingGuide) {
       ;(payload.messages as unknown[]).push({ role: 'user', content: state.pendingGuide })
       state.pendingGuide = null
@@ -124,6 +148,7 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
 
   // ── first durable tool result: anchor phase ends, full catalog returns ──
   pi.on('tool_result', async (event) => {
+    log(`tool_result name=${event.toolName} isError=${event.isError} anchored=${state.anchored}`)
     if (event.isError || state.anchored) return
     state.anchored = true
     if (state.narrowEngaged) restoreNativeTools()
@@ -132,7 +157,8 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
   function restoreNativeTools(): void {
     try {
       if (state.nativeToolNames.length > 0) {
-        pi.setActiveTools([...state.nativeToolNames])
+        void pi.setActiveTools([...state.nativeToolNames])
+        log(`restoreNativeTools -> [${state.nativeToolNames.join(',')}]`)
       }
     } catch {
       // Ignore — the catalog will refresh on the next agent start.
@@ -140,8 +166,14 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
     state.narrowEngaged = false
   }
 
-  registerTools(pi, { state, modelId, currentMode })
-  registerCommands(pi, { state, modelId, currentMode })
+  registerTools(pi, { state, modelId, currentMode, log })
+  registerCommands(pi, { state, modelId, currentMode, log })
+}
+
+function safeEventShape(event: unknown): string {
+  if (typeof event !== 'object' || event === null) return 'non-object'
+  const keys = Object.keys(event as Record<string, unknown>)
+  return `{${keys.join(',')}}`
 }
 
 function bandIsWeak(mode: Mode): boolean {
