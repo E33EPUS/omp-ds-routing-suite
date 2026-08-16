@@ -345,20 +345,23 @@ specification-determined — **task design density moderates the anchoring
 effect** (same shape as the paper's P2: simple tasks saturate). The +160%
 claim is scoped to design-heavy greenfield tasks.
 
-**E3 — resident catalog comparison (n=2).** Cart task, plugin default;
+**E3 — resident catalog comparison (n=4).** Cart task, plugin default;
 variable: promoted catalog = full native set vs resident narrow set
 (`/dsr-resident on` / settings `{"resident": true}`, verified in the
 diagnostics log: `restoreNativeTools resident -> [bash,edit,read,write]`):
 
-| session | promoted catalog | depth | hes | assertions |
+| session | promoted catalog | depth | hes | tests/assertions |
 |---|---|---|---|---|
-| res1 / res2 | full (off) | 20.5K / 37.8K | 35 / 32 | 25 / 27 |
-| res3 / res4 | narrow (on) | 13.9K / 73.1K | 4 / 90 | 38 / 38 |
+| res1 / 2 / 5 / 6 | full (off) | 20.5 / 37.8 / 12.6 / 39.7K | 35 / 32 / 10 / 31 | 25 / 27 / 19 / 10 |
+| res3 / 4 / 7 / 8 | narrow (on) | 13.9 / 73.1 / 34.0 / 9.6K | 4 / 90 / 26 / 7 | 38 / 38 / 17 / 10 |
 
-Completeness is consistently higher with the resident narrow set (38 vs
-25/27, +46%, both runs identical) — weak support for the upstream
-post-promotion regression warning at the output level. Depth and hesitation
-spread (±60K) is too large for a conclusion at n=2.
+An earlier n=2 read of this experiment claimed a completeness advantage for
+the narrow set (38 vs 25/27 assertions, +46%). The n=4 data retract that:
+the added runs (on: 17/10 vs off: 19/10) point the other way, and the
+test files report different assertion styles (counts vs tests vs checks),
+so the numbers are not comparable across sessions. All eight sessions
+completed the task and passed their tests. Depth (27.7K vs 32.7K) and
+hesitation (27 vs 32) show no stable difference at n=4.
 
 **E4 — long-horizon related chain (paper P21 design).** Eight sequential
 turns (write → fix → extend → fix → extend → fix → extend → fix) on the
