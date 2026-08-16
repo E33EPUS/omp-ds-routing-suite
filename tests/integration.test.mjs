@@ -73,9 +73,10 @@ test('full lifecycle: weak mode anchors, guides, then promotes', async () => {
 
   // 3. before_agent_start: persona mount + tool narrowing
   let systemPrompt = null
-  await runFlow(handlers, pi, [{ name: 'before_agent_start', event: { systemPrompt: 'OMP native system...' }, capture: (r) => { systemPrompt = r?.systemPrompt } }])
-  assert.match(systemPrompt ?? '', /helpful assistant/)
-  assert.match(systemPrompt ?? '', /Think deeply first/)
+  await runFlow(handlers, pi, [{ name: 'before_agent_start', event: { systemPrompt: ['OMP native system...'] }, capture: (r) => { systemPrompt = r?.systemPrompt } }])
+  const sp = Array.isArray(systemPrompt) ? systemPrompt.join('\n') : (systemPrompt ?? '')
+  assert.match(sp, /helpful assistant/)
+  assert.match(sp, /Think deeply first/)
   assert.deepEqual(getActiveTools(), ['bash', 'edit']) // RL-shape narrow surface
   assert.ok(events.some(([name, names]) => name === 'setActiveTools' && names.length === 2))
 
@@ -90,10 +91,13 @@ test('full lifecycle: weak mode anchors, guides, then promotes', async () => {
   await handlers.get('tool_result')({ toolName: 'bash', isError: false })
   assert.deepEqual(getActiveTools(), ['bash', 'read', 'write', 'edit', 'glob', 'grep', 'web_search'])
 
-  // 6. next agent start: persona stays mounted, no re-narrowing
+  // 6. next agent start: persona + native sections both present, no re-narrowing
   let secondSystem = null
-  await runFlow(handlers, pi, [{ name: 'before_agent_start', event: { systemPrompt: 'OMP native system...' }, capture: (r) => { secondSystem = r?.systemPrompt } }])
-  assert.equal(secondSystem, systemPrompt) // path commitment: constant persona
+  await runFlow(handlers, pi, [{ name: 'before_agent_start', event: { systemPrompt: ['OMP native system...'] }, capture: (r) => { secondSystem = r?.systemPrompt } }])
+  assert.ok(Array.isArray(secondSystem))
+  assert.equal(secondSystem.length, 2) // [persona, native]
+  assert.match(secondSystem[0], /helpful assistant/)
+  assert.equal(secondSystem[1], 'OMP native system...') // memory/AGENTS.md restored
   assert.deepEqual(getActiveTools(), ['bash', 'read', 'write', 'edit', 'glob', 'grep', 'web_search'])
 })
 

@@ -59,15 +59,20 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
     return mode === 'native' ? 'native' : mode
   }
 
-  /** System prompt for the router persona (mounted every agent start). */
-  const personaSystem = (): string => {
+  /** System prompt for the router persona.
+   *  First turn (not yet anchored): pure persona — the RL-shape anchor.
+   *  After the first durable tool call: persona + the FRESH native system
+   *  sections OMP built for this turn (AGENTS.md / memory / tool guidance),
+   *  so the model keeps its identity/persona while the anchored trajectory
+   *  is already committed. */
+  const personaSystem = (event: { systemPrompt?: unknown }): string[] => {
     const mode = currentMode()
-    if (mode === 'native') return ''
+    if (mode === 'native') return []
     const persona = personaFor(mode, modelId())
-    if (state.settings.systemMode === 'prepend' && state.nativeSystemPrompt) {
-      return `${persona}\n\n${state.nativeSystemPrompt}`
+    if (state.anchored && Array.isArray(event.systemPrompt) && event.systemPrompt.length > 0) {
+      return [persona, ...event.systemPrompt]
     }
-    return persona
+    return [persona]
   }
 
   // ── session lifecycle ────────────────────────────────────────────────────
@@ -122,9 +127,6 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
     const mode = currentMode()
     log(`before_agent_start mode=${mode} anchored=${state.anchored} narrow=${state.narrowEngaged} spType=${typeof event.systemPrompt} spLen=${Array.isArray(event.systemPrompt) ? event.systemPrompt.length : String(event.systemPrompt ?? '').length}`)
     if (mode === 'native') return undefined
-    if (state.nativeSystemPrompt === null && typeof event.systemPrompt === 'string') {
-      state.nativeSystemPrompt = event.systemPrompt
-    }
     // Anchor: narrow the tool surface until the first durable tool result.
     if (state.settings.anchor && !state.anchored) {
       const core = coreFor(mode)
@@ -139,7 +141,7 @@ export default function dsRouterSuite(pi: ExtensionAPI): void {
     } else if (state.narrowEngaged && state.anchored) {
       restoreNativeTools()
     }
-    const system = personaSystem()
+    const system = personaSystem(event)
     return { systemPrompt: system }
   })
 
