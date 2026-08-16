@@ -22,9 +22,12 @@ and its
 
 **TL;DR.** Install (section 1), then just use it: the plugin classifies each
 task, anchors the first turn to two tools, and injects per-turn guidance.
-Measured on Flash (2026-08-16, official API): first-turn anchoring is the only
-strong effect (+160% thinking depth, n=1); DEEP guidance and weak persona sit
-within noise. Windows 11 + Oh My Pi only (4.1). Evidence in section 3.
+Measured on Flash (2026-08-16, official API): first-turn anchoring is the
+only strong depth mechanism (+160% on design-heavy greenfield tasks, 3.3,
+E2); the shipped DEEP tail text is neutral on top of it (3.3), while
+behavioral guidance tails (inhibit/encourage hesitation, E1) move depth and
+completeness strongly. Windows 11 + Oh My Pi only (4.1). Evidence in
+section 3.
 
 ## 1. Install & Quick Start
 
@@ -301,6 +304,15 @@ anything about Pro.
 Headless runs via `omp -p` (non-interactive OMP sessions, extension loaded —
 verified in the diagnostics log; sessions land in `~/.omp/agent/sessions/`).
 
+**Hesitation typology.** `bench/hes-types.mjs` classifies every hesitation
+marker by local context into option-comparison (`weigh`), fault-line
+reversal inside a we-basin block (`fault`), or other. Across all four
+ablation/benchmark sessions (A, contaminated A, C1, D1; 262 markers total)
+the fault class count is **zero** — the paper's "fault-line" reversal never
+occurs in Flash greenfield tasks, where thinking runs on doer tracks
+(option comparison) instead. Hesitation in Flash is decision weighing, not
+trajectory instability.
+
 **E1 — hesitation causality (n=2 per guidance).** Same cart task, plugin
 default (weak + anchor + guide), only the tail text varies:
 
@@ -384,18 +396,19 @@ PowerShell 7-specific syntax is used.
 
 ### 4.2 Unverified claims
 
-- **Pro is untested.** The code branches on model name, but no measurement
-  exists in this repository.
+- **Pro is only half-measured.** The code branches on model name; the only
+  Pro data is a partial P10 run (n=2, 3.7).
 - **anchored-standard on Flash (DSH side) is untested.** The interplay with
   `suppressedContextSources` was inspected in the SeekAnchor source, not run.
-- **Sample sizes are small.** n=1 per ablation group, n=5 per persona cell —
+- **Sample sizes are small.** Ablation n=1 (3.3), E1/E2/E3/E4 n=2 (3.8) —
   the same order as the paper's n=2–3.
-- **Noise band is ±30K characters** of thinking per single run (3.1).
-- **Resident catalog is not implemented.** After the first tool call the full
-  catalog is restored; a resident narrow catalog (anchored-standard's
-  regression guard) is a future option.
-- **Related-task chains (paper P21) were not reproduced**; the negative
-  guidance effect there is out of scope.
+- **Noise band is ±30K characters** of thinking per single run (3.1); E3
+  showed ±60K between resident-condition runs.
+- **Resident mode exists but is off by default** (`/dsr-resident on`); E3
+  measured it at n=2 — completeness +46%, depth inconclusive.
+- **Related-task chains (paper P21) were not reproduced in the paper's exact
+  form** (per-turn interactive session); E4-R measured per-turn isolated
+  processes instead (3.8), where guidance did not hurt output.
 
 ### 4.3 Disclaimers
 
