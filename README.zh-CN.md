@@ -11,6 +11,10 @@
 本文档所有测量均于 2026-08-16 在 DeepSeek 官方 API（`deepseek-v4-flash`）上
 完成
 
+下文所称"论文"指 dsh-router-standard 的论文（随 dsh-routing-suite 套装分发）：
+[paper.md](https://github.com/yjh051108/dsh-router-standard/blob/main/docs/paper.md)
+与 [experiments.md](https://github.com/yjh051108/dsh-router-standard/blob/main/docs/experiments.md)
+
 ## 1. 安装与快速开始
 
 ```powershell
@@ -155,7 +159,16 @@ doer 轨迹产出阶段：B 30 次、A 72 次，Flash 可复现。三个条件�
 native 模式（无 persona 形态锁定）、从零任务（无既有路径）、doer 轨迹
 （走出 we 盆地）。n=2 会话，按假设对待
 
-## 4. 边界与未验证事项
+## 4. 边界、环境与免责声明
+
+### 4.1 环境（实测范围）
+
+所有测量与跑分会话均运行于 Windows 11 + Oh My Pi（shell：Git Bash）。
+DSH、Linux、WSL 未测试。`install.ps1` 仅使用 Windows PowerShell 5.1 基础
+cmdlet（`Join-Path`、`Test-Path`、`New-Item`、`Copy-Item`、`Move-Item`、
+`Write-Host`），无 PowerShell 7 专属语法
+
+### 4.2 未验证事项
 
 - **Pro 未实测。** 代码按模型名分支，但本仓库没有任何测量数据。
 - **anchored-standard on Flash（DSH 侧）未实测。** 与
@@ -165,6 +178,16 @@ native 模式（无 persona 形态锁定）、从零任务（无既有路径）�
 - **resident catalog 未实现。** 首个工具调用后恢复全量工具集；常驻窄目录
   （anchored-standard 的防回归设计）是未来选项
 - **相关任务链（论文 P21）未复现**，那里的引导负效应不在范围内
+
+### 4.3 免责声明
+
+- **行为。** 插件修改模型输入（工具集、persona、引导）。与原生 OMP 不同的
+  行为——"Router: ..." 行、persona 形态变化——是设计特性，不是缺陷
+- **效果。** 除首轮锚定的深度效应（n=1，3.3）外，路由与引导在 Flash 上的
+  独立效应在测量噪声内。本文档不做超出第 3 节的效果承诺
+- **时效。** 所有测量基于 2026-08-16 DeepSeek 官方 API 快照；模型更新可能
+  使其失效
+- **质量。** 插件不保证输出质量、正确性、任务成功
 
 ## 5. 复现测量
 

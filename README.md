@@ -14,6 +14,12 @@ All measurements in this README were taken against the official DeepSeek API
 with which counting rules; section 4 lists what was not measured. No statement
 in this document claims more than those two sections.
 
+References to "the paper" point to the dsh-router-standard paper, shipped
+inside dsh-routing-suite:
+[paper.md](https://github.com/yjh051108/dsh-router-standard/blob/main/docs/paper.md)
+and its
+[experiments.md](https://github.com/yjh051108/dsh-router-standard/blob/main/docs/experiments.md).
+
 ## 1. Install & Quick Start
 
 ```powershell
@@ -93,7 +99,7 @@ thinking block:
 - **depth** — character length of the thinking block;
 - **hesitations** — occurrences of self-reversal markers (`hmm`, `wait`,
   `hold on`, `but wait`), the "double-attractor" interleaving described in the
-  dsh-routing-suite paper;
+  paper;
 - **I will / we / let** — occurrence counts of those chain-head forms in the
   thinking text.
 
@@ -196,7 +202,17 @@ in the production phase of doer trajectories on greenfield complex tasks: B
 mode (no persona form-lock), a greenfield task (no existing path), and a doer
 trajectory (outside the we-basin). n=2 sessions; treated as a hypothesis.
 
-## 4. Boundaries and unverified claims
+## 4. Boundaries, environment, disclaimers
+
+### 4.1 Environment (what was tested)
+
+All measurements and benchmark sessions ran on Windows 11 with Oh My Pi (shell:
+Git Bash). DSH, Linux, and WSL were not tested. `install.ps1` uses only base
+cmdlets available in Windows PowerShell 5.1 (`Join-Path`, `Test-Path`,
+`New-Item`, `Copy-Item`, `Move-Item`, `Write-Host`); no PowerShell 7-specific
+syntax is used.
+
+### 4.2 Unverified claims
 
 - **Pro is untested.** The code branches on model name, but no measurement
   exists in this repository.
@@ -210,8 +226,19 @@ trajectory (outside the we-basin). n=2 sessions; treated as a hypothesis.
   regression guard) is a future option.
 - **Related-task chains (paper P21) were not reproduced**; the negative
   guidance effect there is out of scope.
-- **Thinking visibility** requires `hideThinkingBlock: false` in the OMP
-  config; the plugin does not change that setting.
+
+### 4.3 Disclaimers
+
+- **Behavior.** The plugin modifies model input (tool catalog, persona,
+  guidance). Behavior that differs from native OMP — "Router: ..." lines,
+  persona form changes — is by design, not a defect.
+- **Effects.** Apart from the first-turn anchoring depth effect (n=1, 3.3),
+  the independent effects of routing and guidance on Flash sit within
+  measurement noise. This document makes no effect claims beyond section 3.
+- **Timeliness.** All measurements were taken against the 2026-08-16 official
+  DeepSeek API snapshot; a model update may invalidate them.
+- **Quality.** The plugin does not guarantee output quality, correctness, or
+  task success.
 
 ## 5. Reproducing the measurements
 
