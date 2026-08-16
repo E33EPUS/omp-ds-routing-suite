@@ -65,7 +65,7 @@ export class RouterState {
   cwd: string | null = null
 
   settingsFile(): string {
-    return join(this.cwd ?? process.cwd(), '.omp', 'ds-router-suite', 'settings.json')
+    return join(this.cwd ?? process.cwd(), '.omp', 'ds-routing-suite', 'settings.json')
   }
 
   loadSettings(): void {

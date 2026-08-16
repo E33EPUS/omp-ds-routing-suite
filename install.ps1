@@ -1,4 +1,4 @@
-# install.ps1 — omp-ds-router-suite 一键安装
+# install.ps1 — omp-ds-routing-suite 一键安装
 # 用法：powershell -ExecutionPolicy Bypass -File install.ps1
 # 干三件事：装扩展 / 禁用冲突的 SeekAnchor / 提示重启
 
@@ -6,10 +6,10 @@ $ErrorActionPreference = 'Stop'
 
 $agentRoot = if ($env:PI_CODING_AGENT_DIR) { $env:PI_CODING_AGENT_DIR } else { Join-Path $env:USERPROFILE '.omp\agent' }
 $extRoot = Join-Path $agentRoot 'extensions'
-$target = Join-Path $extRoot 'omp-ds-router-suite'
+$target = Join-Path $extRoot 'omp-ds-routing-suite'
 $source = Join-Path $PSScriptRoot '.'
 
-Write-Host "== omp-ds-router-suite installer ==" -ForegroundColor Cyan
+Write-Host "== omp-ds-routing-suite installer ==" -ForegroundColor Cyan
 Write-Host "agent root: $agentRoot"
 Write-Host "target:     $target"
 

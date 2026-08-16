@@ -1,5 +1,5 @@
 /**
- * index.ts — omp-ds-router-suite extension entry.
+ * index.ts — omp-ds-routing-suite extension entry.
  *
  * DeepSeek reasoning-mode router for Oh My Pi, porting the measured
  * mechanisms of dsh-router-standard / dsh-mode-boost (MIT):
@@ -25,7 +25,7 @@ import { registerCommands } from './commands.ts'
 import { registerTools } from './tools.ts'
 
 /** Best-effort diagnostics log (never throws). */
-const DIAG_LOG = join(homedir(), '.omp', 'logs', 'ds-router-suite.log')
+const DIAG_LOG = join(homedir(), '.omp', 'logs', 'ds-routing-suite.log')
 function log(msg: string): void {
   if (process.env.DS_ROUTER_DIAG_LOG === 'off') return
   try {
