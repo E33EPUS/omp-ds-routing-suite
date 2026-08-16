@@ -1,1 +1,246 @@
-# Omp-ds-routing-suite
+# omp-ds-routing-suite
+
+[English](README.md) | [中文](README.zh-CN.md)
+
+First-turn tool anchoring, task classification, and per-turn guidance for
+DeepSeek V4 Flash inside Oh My Pi. Port of mechanisms measured in the DSH
+ecosystem:
+
+- [yjh051108/dsh-routing-suite](https://github.com/yjh051108/dsh-routing-suite)
+- [xiaobright/dsh-anchored-standard](https://github.com/xiaobright/dsh-anchored-standard)
+
+All measurements in this README were taken against the official DeepSeek API
+(`deepseek-v4-flash`) on 2026-08-16. Section 3 states what was measured and
+with which counting rules; section 4 lists what was not measured. No statement
+in this document claims more than those two sections.
+
+## 1. Install & Quick Start
+
+```powershell
+# 1. clone the repository, then from the repository root:
+powershell -ExecutionPolicy Bypass -File install.ps1
+
+# 2. quit Oh My Pi completely (not /reload — extensions load at startup),
+#    then reopen.
+```
+
+The installer copies the extension to `~/.omp/agent/extensions/` and moves a
+conflicting SeekAnchor install to `extensions-disabled/` if present. The
+default mode is `weak`; the plugin is active immediately after restart.
+
+Commands (escape hatches, not required for daily use):
+
+```
+/dsr-mode weak      model self-classification (default)
+/dsr-mode spec      plan-first persona (maintenance / reading tasks)
+/dsr-mode react     execution-first persona (greenfield build tasks)
+/dsr-mode native    disable the plugin for this session
+/dsr-status         print current mode, persona, and guidance state
+```
+
+Uninstall:
+
+```powershell
+Remove-Item -Recurse $env:USERPROFILE\.omp\agent\extensions\omp-ds-routing-suite
+# restore SeekAnchor, if it was disabled:
+#   move extensions-disabled\deepseek-rl-anchor back to extensions\
+```
+
+"Router: ..." lines that appear in the transcript after each user message are
+the injected guidance text, addressed to the model. They are not configuration
+prompts.
+
+## 2. Mechanisms
+
+What the extension does, without effect claims (effects are in section 3).
+
+**First-turn anchoring.** The first `agent_start` of a session sets the active
+tool catalog to two tools (`bash`, `edit`). The full catalog is restored after
+the first durable tool call (`restoreNativeTools` merges the native catalog
+back in). Rationale: with a two-tool surface the model cannot explore, read, or
+write beyond the immediate task; the measured effect on thinking depth is in
+3.3.
+
+**Task classification.** Three persona bands ported from dsh-mode-boost:
+`weak` (the model classifies itself; default), `spec` (plan-first), `react`
+(execution-first). Persona text differs per model: Flash gets
+`neutral + classify + session anchors + deep-first`, Pro gets
+`spec sentence + classify instruction`. The classification is re-run from
+round 3 onward so a new task is not carried by the previous turn's style
+(anti-dilution, "boost" reclassification).
+
+**Per-turn guidance.** After each real user message the extension appends one
+guidance line to the request tail: a converge instruction for short tasks, a
+deep-think instruction for long tasks. The guidance text is fixed per task
+class (BASE / COMMIT / DEEP), mirroring dsh-mode-boost's cached-guide design.
+
+**Why no injector.** DSH loads system content through a message-level layer,
+which is why dsh-routing-suite ships an injector and `suppressedContextSources`
+tables. In Oh My Pi the project `AGENTS.md` sits in the system array, so the
+persona swap is a wholesale replacement of that array slot; no runtime
+injector is needed. This is an architecture difference, not a porting shortcut.
+
+## 3. Measurements & Evidence
+
+All numbers below were machine-counted with the scripts in `bench/` and
+`probe/` (section 5 gives the commands).
+
+### 3.1 Tooling and counting rules
+
+`bench/analyze-thinking.mjs` reads an OMP session jsonl and counts, per
+thinking block:
+
+- **depth** — character length of the thinking block;
+- **hesitations** — occurrences of self-reversal markers (`hmm`, `wait`,
+  `hold on`, `but wait`), the "double-attractor" interleaving described in the
+  dsh-routing-suite paper;
+- **I will / we / let** — occurrence counts of those chain-head forms in the
+  thinking text.
+
+`probe/thinking-probe.mjs` calls the API directly (Anthropic endpoint,
+`/anthropic`; the persona must sit in the top-level `system` field — P6) and
+classifies the first line of each thinking block as `we-track`, `let-track`,
+`hesitate`, or `other`.
+
+Two limits apply to every number in this section. First, sample size: n=1 per
+ablation group, n=5 per persona cell in the matrix. Second, single-run noise:
+two runs of the same C1 condition differed by ~30K characters of thinking
+(66.9K vs 37.6K, see 3.3). Directional claims below survive that noise;
+magnitudes do not.
+
+### 3.2 Bilingual persona matrix (n=5, official API)
+
+Same read-type and build-type micro-tasks under three personas, five requests
+per cell:
+
+| condition | we-track | doer (let/other) | hesitate |
+|---|---|---|---|
+| baseline (no persona) | mixed | mixed | 0 |
+| English weak persona | 3/10 | 7/10 | 0 |
+| Chinese persona | 15/15 | 0/15 | 0 |
+
+Observations:
+
+1. **Persona language locks the chain form.** Chinese persona → 15/15
+   `we-track`, zero doer forms, zero hesitation. English weak persona keeps
+   doer release (7/10). The paper's experiments were all-English; this cell
+   was untested there.
+2. **System language sets the thinking-chain language.** A Chinese `AGENTS.md`
+   produces Chinese thinking chains regardless of persona language; an English
+   persona does not force English chains.
+3. **Language does not block forms.** The `we-track` basin dominates both
+   languages; the doer form is a secondary attractor that Chinese persona
+   suppresses.
+4. **Zero hesitation in direct API calls** (16/16 in an earlier n=2x2 run).
+   Hesitation appears only in tool-execution sessions (3.3), consistent with
+   the paper's finding that discrimination needs a tool surface.
+
+Consequence for the default config: the persona shipped by the plugin is the
+paper's English persona; a Chinese persona comes from the user's own
+`AGENTS.md` (system layer), which the plugin does not override.
+
+### 3.3 Ablation: four clean greenfield runs
+
+**Design.** The same greenfield task (implement a JavaScript shopping-cart
+module with 8 specified functions and ≥10 `node:assert` tests, text in
+`bench/cart-task.md`) was run once per condition, each in its own OMP session
+with its own empty working directory. Empty directories and fixed cwd are
+deliberate: the first two attempts were contaminated by leftover files from
+the A/B benchmark, and a contaminated workspace makes the model take a reuse
+path instead of a greenfield path, inflating depth (66.9K for a contaminated
+C1 design phase vs 37.6K for the clean C1 run).
+
+| group | persona | anchor | DEEP guide | depth (chars) | hesitations | I will | test assertions |
+|---|---|---|---|---|---|---|---|
+| B — native baseline | none | no | no | 32,102 | 28 | 30 | 25 |
+| D1 | none | no | manual text | 34,300 | 40 | 37 | ~29 |
+| C1 | weak | no | plugin | 37,757 | 42 | 40 | ~30 |
+| A | weak | **yes** (2 tools) | plugin | 97,917 | 117 | 72 | 41 |
+
+All four groups finished the task and passed their test suite. `we`/`let`
+counts were recorded for C1 (we=1, let=29) and D1 (we=1, let=34) only; the B
+and A sessions predate the counter. Assertion counts are a proxy for output
+completeness; they rise with depth (25 → 41).
+
+Conclusions:
+
+1. **First-turn anchoring is the only strong mechanism.** A vs C1: +60K
+   characters of thinking (+160%). With a two-tool surface the model cannot
+   act beyond `bash`/`edit`, so it reasons instead. The earlier attribution of
+   the 98K figure to the DEEP guidance was wrong; the guidance contributes
+   within noise (D1 vs B: +2.2K).
+2. **DEEP guidance is neutral on Flash.** D1 (manual DEEP text) vs B: +2.2K,
+   inside the ±30K noise band. The paper's "+12% depth" for deep guidance
+   (P30) is Pro data; its own Flash observation ("c-closed ≈ b-directed") is
+   confirmed here on a real task.
+3. **weak persona stacking is small.** C1 vs D1: +3.5K, inside noise.
+4. **Hesitation and "I will" are byproducts of depth.** Both rise with depth
+   across groups (28 → 117, 30 → 72). They are fingerprints of extended
+   reasoning, not defects to remove.
+
+### 3.4 Relation to the DSH paper lineage
+
+| claim | status here |
+|---|---|
+| Flash routes better in weak than spec (P11: +5.7 vs −2.0) | reproduced as the default-mode choice; not re-measured end-to-end |
+| deep guidance is neutral on Flash, P30 ("c-closed ≈ b-directed") | confirmed on a real greenfield task (3.3) |
+| anchoring steers the we-track trajectory (dsh-anchored-standard) | trajectory not re-measured; the depth effect is new (3.3) |
+| language layering (persona locks form, system sets language) | new, outside the paper's all-English scope (3.2) |
+| injection is blocked by `suppressedContextSources` (DSH) | architecture difference: OMP replaces the system array wholesale, no injector needed (2) |
+
+### 3.5 "I will" trigger condition (hypothesis, not an experiment)
+
+Across both benchmark sessions the form `The user → Let me → I will` appears
+in the production phase of doer trajectories on greenfield complex tasks: B
+30 occurrences, A 72. Flash reproduces it. Three conditions coincide: native
+mode (no persona form-lock), a greenfield task (no existing path), and a doer
+trajectory (outside the we-basin). n=2 sessions; treated as a hypothesis.
+
+## 4. Boundaries and unverified claims
+
+- **Pro is untested.** The code branches on model name, but no measurement
+  exists in this repository.
+- **anchored-standard on Flash (DSH side) is untested.** The interplay with
+  `suppressedContextSources` was inspected in the SeekAnchor source, not run.
+- **Sample sizes are small.** n=1 per ablation group, n=5 per persona cell —
+  the same order as the paper's n=2–3.
+- **Noise band is ±30K characters** of thinking per single run (3.1).
+- **Resident catalog is not implemented.** After the first tool call the full
+  catalog is restored; a resident narrow catalog (anchored-standard's
+  regression guard) is a future option.
+- **Related-task chains (paper P21) were not reproduced**; the negative
+  guidance effect there is out of scope.
+- **Thinking visibility** requires `hideThinkingBlock: false` in the OMP
+  config; the plugin does not change that setting.
+
+## 5. Reproducing the measurements
+
+Persona matrix:
+
+```sh
+DEEPSEEK_API_KEY=sk-xxx DEEPSEEK_API_BASE=https://api.deepseek.com/anthropic \
+  node probe/thinking-probe.mjs deepseek-v4-flash 3
+```
+
+Counting a session (after a benchmark run in an isolated directory):
+
+```sh
+node bench/analyze-thinking.mjs ~/.omp/agent/sessions/--D--bench-cart-*/<session>.jsonl
+```
+
+Ablation protocol (what the four groups did):
+
+1. Create an empty directory per condition; set the OMP session cwd to it.
+2. Paste the task from `bench/cart-task.md` as the first message.
+3. Condition variables: persona (none vs weak), anchoring (off vs on), DEEP
+   guide (none vs manual tail text vs plugin).
+4. Run `analyze-thinking.mjs` on the resulting session jsonl; count test
+   assertions in the produced `test.js`.
+
+## 6. License & acknowledgements
+
+MIT. Guidance texts and personas derive from
+[yjh051108/dsh-routing-suite](https://github.com/yjh051108/dsh-routing-suite)
+(which bundles dsh-mode-boost), acknowledging
+[xiaobright/dsh-anchored-standard](https://github.com/xiaobright/dsh-anchored-standard)
+for the anchoring mechanism.
