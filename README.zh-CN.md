@@ -23,6 +23,17 @@
 
 ## 1. 安装与快速开始
 
+**推荐——OMP 插件市场**（仓库本身就是市场源，无审核直接装）：
+
+```
+/marketplace add E33EPUS/omp-ds-routing-suite
+/marketplace install omp-ds-routing-suite@omp-ds-routing-suite
+```
+
+然后完全重启 Oh My Pi（扩展在启动时加载）
+
+**手动——PowerShell**（效果相同）：
+
 ```powershell
 # 1. 克隆本仓库后，在仓库根目录执行：
 powershell -ExecutionPolicy Bypass -File install.ps1

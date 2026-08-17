@@ -31,6 +31,18 @@ section 3.
 
 ## 1. Install & Quick Start
 
+**Recommended — via the OMP marketplace** (the repo is its own marketplace
+source; no review process, install directly):
+
+```
+/marketplace add E33EPUS/omp-ds-routing-suite
+/marketplace install omp-ds-routing-suite@omp-ds-routing-suite
+```
+
+Then fully restart Oh My Pi (extensions load at startup).
+
+**Manual — PowerShell** (same result):
+
 ```powershell
 # 1. clone the repository, then from the repository root:
 powershell -ExecutionPolicy Bypass -File install.ps1
