@@ -463,6 +463,22 @@ ledger resume), which this experiment does not cover.
 - **If the model seems to "think too long"** on a first turn: that is the
   anchor working, not a hang; the second turn restores the full toolset.
 
+**E5 — third-task gradient (n=2, medium design density: md2html).** The
+design-density gradient across three greenfield tasks:
+
+| task | design density | plugin depth | native depth | depth gain | assertions (plugin vs native) |
+|---|---|---|---|---|---|
+| cart (3.3) | high | 72–98K | 32.1K | +160% | 41 vs 25 |
+| md2html | medium | 54.7K (31.9/77.4) | 22.6K (17.5/27.8) | +142% | 23 vs 23 |
+| CSV parser (E2) | low | 29.4K | 30.3K | 0% | 22.5 vs 21.5 |
+
+The anchoring depth effect is robust across two of three tasks: any design
+decision space (escape priority, list merging, tolerance) suffices for
++140% depth. Depth gain and completeness gain must be reported separately:
+md2html shows +142% depth with zero assertion difference (23 = 23), while
+the cart task shows both. Within-group spread remains large (a1 31.9K vs
+a2 77.4K).
+
 ## 4. Boundaries, environment, disclaimers
 
 ### 4.1 Environment (what was tested)
