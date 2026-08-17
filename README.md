@@ -344,6 +344,15 @@ Encourage vs neutral shows no stable difference. Within-group spread stays
 large (±35K), but the inhibit-vs-neutral direction holds in all four
 samples.
 
+**Time cost (the community-intuition dimension).** Per-session wall time
+rises superlinearly with hesitation across all 12 E1 sessions: 29s at 0
+hesitations, 36–90s at 2–12, 88–123s at 21–33, 135–220s at 59–119. More
+hesitation buys depth and completeness but costs wall time (up to 7.6×).
+The community intuition "more hesitation = worse" is therefore a
+time-cost intuition, not a quality one: quality (assertions) rises with
+hesitation in every E1 sample; time cost is the real price, and it is
+what makes hesitation feel bad in interactive use.
+
 **E2 — task generalization (n=2).** The same conditions on a CSV-parser task
 (spec-determined: parse/toCSV/quoting rules, little design ambiguity):
 
