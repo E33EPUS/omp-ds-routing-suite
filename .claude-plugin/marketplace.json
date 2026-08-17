@@ -1,0 +1,27 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "omp-ds-routing-suite",
+  "owner": {
+    "name": "E33EPUS"
+  },
+  "metadata": {
+    "description": "DeepSeek reasoning-mode routing suite for Oh My Pi (first-turn anchoring + task routing + guidance, with measured evidence)",
+    "version": "0.1.1"
+  },
+  "plugins": [
+    {
+      "name": "omp-ds-routing-suite",
+      "description": "First-turn tool anchoring, task classification and per-turn guidance for DeepSeek V4 Flash in Oh My Pi. Measured: anchoring +160% thinking depth on design-heavy greenfield tasks (13 experiment groups in README).",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/E33EPUS/omp-ds-routing-suite.git"
+      },
+      "author": { "name": "E33EPUS" },
+      "homepage": "https://github.com/E33EPUS/omp-ds-routing-suite",
+      "repository": "https://github.com/E33EPUS/omp-ds-routing-suite",
+      "license": "MIT",
+      "category": "development",
+      "tags": ["deepseek", "deepseek-v4-flash", "reasoning", "anchored-standard", "routing", "omp"]
+    }
+  ]
+}

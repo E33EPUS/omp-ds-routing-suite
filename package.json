@@ -1,9 +1,39 @@
 {
   "name": "omp-ds-routing-suite",
   "version": "0.1.1",
-  "private": true,
   "type": "module",
-  "description": "DeepSeek reasoning-mode router for Oh My Pi: task-aware persona routing, first-turn tool anchoring, near-field guidance (ported from dsh-router-standard / dsh-mode-boost measured mechanisms)",
+  "description": "DeepSeek reasoning-mode routing suite for Oh My Pi: first-turn tool anchoring, task classification, per-turn guidance. Measured on the official API (ablation, E1-E5, F1-F2 evidence in README).",
+  "main": "index.ts",
+  "license": "MIT",
+  "keywords": [
+    "omp",
+    "omp-extension",
+    "oh-my-pi",
+    "deepseek",
+    "deepseek-v4-flash",
+    "reasoning",
+    "anchored-standard",
+    "routing"
+  ],
+  "files": [
+    "index.ts",
+    "core.ts",
+    "state.ts",
+    "commands.ts",
+    "tools.ts",
+    "README.md",
+    "README.zh-CN.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "omp": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "peerDependencies": {
+    "@oh-my-pi/pi-coding-agent": "*"
+  },
   "scripts": {
     "test": "node --test tests/core.test.mjs tests/integration.test.mjs",
     "probe": "node probe/thinking-probe.mjs",
