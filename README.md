@@ -407,6 +407,16 @@ mechanism is think-then-targeted-read: deep guidance substitutes reasoning
 for exploratory tool use. Note the metrics differ from the paper's
 (fix-round success rate vs assertion counts).
 
+**Long-horizon hesitation trend (E4-R re-analysis).** Per-turn hesitation
+density across the 8-turn chains: plugin a1 1.6→1.5/K, a2 1.8→1.2/K
+(depth +60% in the second half while density falls); native b1 1.9→1.7/K,
+b2 1.9→1.0/K (depth collapses to 12K in the second half). Hesitation
+density never rises across turns — the "long-horizon hesitation runaway"
+hypothesis fails. The plugin-vs-native gap widens in the second half:
+anchoring+guidance holds or deepens thinking late in a chain, native
+thinking shallows out — which is where the E4-R +78% assertion gap comes
+from (the difference lives in the late turns).
+
 **F1 — J-Space protocol cross-check (2026-08-16 night).** An external
 inference-time control suite (J-Space Cognition Suite V3.6, Apache-2.0,
 skill-packaged protocol with a dense-track register ✓/?/✗ and explicit
