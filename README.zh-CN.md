@@ -15,22 +15,25 @@
 [paper.md](https://github.com/yjh051108/dsh-router-standard/blob/main/docs/paper.md)
 与 [experiments.md](https://github.com/yjh051108/dsh-router-standard/blob/main/docs/experiments.md)
 
-**速览。** 装完（第 1 节）直接用：插件自动分类任务、首轮锚定两工具、逐轮注入
-引导。Flash 实测（2026-08-16，官方 API）：首轮锚定是唯一强深度机制
+**速览** 
+装完（第 1 节）直接用：插件自动分类任务、首轮锚定两工具、逐轮注入
+引导。
+
+Flash 实测（2026-08-16，官方 API）：首轮锚定是唯一强深度机制
 （设计密集从零任务 +160%，3.3、E2）；随附 DEEP 尾文本在其上中性（3.3），
 而行为类引导尾文本（抑制/鼓励互搏，E1）强烈影响深度与完整度。仅 Windows
 11 + OMP（4.1）。证据见第 3 节
 
 ## 1. 安装与快速开始
 
-**推荐——OMP 插件市场**（仓库本身就是市场源，无审核直接装）：
+**推荐——OMP 插件市场**：
 
 ```
 /marketplace add E33EPUS/omp-ds-routing-suite
 /marketplace install omp-ds-routing-suite@omp-ds-routing-suite
 ```
 
-然后完全重启 Oh My Pi（扩展在启动时加载）
+然后完全重启 Oh My Pi
 
 **手动——PowerShell**（效果相同）：
 
@@ -61,12 +64,11 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 Remove-Item -Recurse $env:USERPROFILE\.omp\agent\extensions\omp-ds-routing-suite
 ```
 
-对话中每条用户消息后出现的 "Router: ..." 行是注入给模型的引导文本，不是
+对话中每条用户消息后出现的 "Router: ..." 行是注入给模型的引导文本，而非
 配置提示
 
 **结论（怎么用）。** 装完、重启 OMP、直接用——无需任何配置。默认组合
-（weak + 锚定 + 引导）就是实测最优；上面的命令是特殊场景逃生口，
-不是日常工具
+（weak + 锚定 + 引导）就是实测最优；上面的命令是特殊场景逃生口
 
 ### Linux / macOS（手动安装）
 
@@ -107,7 +109,9 @@ dsh-routing-suite 需要注入器 + `suppressedContextSources` 表。Oh My Pi �
 项目 `AGENTS.md` 位于 system 数组，persona 替换就是整槽替换该数组，无需
 运行时注入器
 
-**结论（怎么用）。** 三件事自动发生、不要动它们：首轮只有 2 个工具
+**结论（怎么用）**
+
+三件事自动发生、不要动它们：首轮只有 2 个工具
 （模型先想后做）、任务由模型自分类、每条消息注入一条引导。"Router: ..."
 行是给模型的，不是给你的。唯一有实测效应的开关是模式切换（第 1 节）——
 而且可选：默认 weak 适合大多数工作
@@ -171,7 +175,9 @@ n=10 不可比；OMP 会话的 thinking（3.3、E1/E2）未漂移。直连形态
 
 ### 3.3 四组干净从零实验
 
-**设计。** 同一从零任务（实现一个 JavaScript 购物车模块：8 个指定函数 +
+**设计** 
+
+同一从零任务（实现一个 JavaScript 购物车模块：8 个指定函数 +
 ≥10 条 `node:assert` 测试断言，任务文本在 `bench/cart-task.md`），每组
 独立 OMP 会话、独立空工作目录，各跑一次
 
@@ -186,7 +192,7 @@ n=10 不可比；OMP 会话的 thinking（3.3、E1/E2）未漂移。直连形态
 let=29）与 D1（we=1, let=34）；B 与 A 会话早于该计数器。断言数是产出完整
 度的代理，随深度上升（25 → 41）
 
-结论：
+**结论**
 
 1. **首轮锚定是唯一强机制。** A vs C1：thinking 多 6 万字符（+160%）。
    A 的首个 thinking 块单块 97.9K 字符（约 2.45 万 tokens，远低于 OMP 的
@@ -379,7 +385,7 @@ E1 结论（互搏是深度推理固有成分）③语义形态指令**不改变
 进程（冷启动）；套件设计目标是会话式长程（同会话账本 resume），
 本次未覆盖该场景
 
-**结论（怎么用，证据告诉你的）。**
+**结论（怎么用）**
 
 - **设计密集的从零任务**（新项目、需求有歧义）：插件的主场——锚定
   把思考深度放大约 2.6 倍，完整度随深度上升（3.3、E1）
@@ -436,8 +442,11 @@ PowerShell 7 专属语法
 - **时效：** 所有测量基于 2026-08-16 DeepSeek 官方 API 快照；模型更新可能
   使其失效
 - **质量：** 插件不保证输出质量、正确性、任务成功
+- **权威性：** 因成本问题，未跑DeepSWE类权威分数。结论仅个人测试总结，不代表权威数据
 
-**结论（怎么用）。** 所有测量来自 Windows 11 + Oh My Pi + 官方 API，
+**结论（怎么用）** 
+
+所有测量来自 Windows 11 + Oh My Pi + 官方 API，
 2026-08-16。其他平台、其他 harness、或 DeepSeek 模型更新后，数字可能
 不再成立——插件本身是薄输入层，不会破坏任何东西，但收益是环境依赖的。
 若模型更新后"效果消失"，先查第 3 节而不是插件
@@ -465,7 +474,7 @@ node bench/analyze-thinking.mjs ~/.omp/agent/sessions/--D--bench-cart-*/<session
    手动尾文本 vs 插件）。
 4. 对结果会话 jsonl 跑 `analyze-thinking.mjs`；数产出 `test.js` 的断言数
 
-**结论（给研究者）。** 第 3 节全部数字可从本节 + `bench/` 脚本 + 会话
+**结论（给研究者）** 第 3 节全部数字可从本节 + `bench/` 脚本 + 会话
 归档复现。最便宜的复现：购物车任务在两个空目录各跑一次（插件开 vs
 `/dsr-mode native`），用 `analyze-thinking.mjs` 对比深度与断言
 
