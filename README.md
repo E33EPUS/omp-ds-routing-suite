@@ -20,7 +20,9 @@ inside dsh-routing-suite:
 and its
 [experiments.md](https://github.com/yjh051108/dsh-router-standard/blob/main/docs/experiments.md).
 
-**TL;DR.** Install (section 1), then just use it: the plugin classifies each
+**TL;DR**
+
+Install (section 1), then just use it: the plugin classifies each
 task, anchors the first turn to two tools, and injects per-turn guidance.
 Measured on Flash (2026-08-16, official API): first-turn anchoring is the
 only strong depth mechanism (+160% on design-heavy greenfield tasks, 3.3,
@@ -31,8 +33,7 @@ section 3.
 
 ## 1. Install & Quick Start
 
-**Recommended — via the OMP marketplace** (the repo is its own marketplace
-source; no review process, install directly):
+**Recommended — via the OMP marketplace**:
 
 ```
 /marketplace add E33EPUS/omp-ds-routing-suite
@@ -78,7 +79,7 @@ Remove-Item -Recurse $env:USERPROFILE\.omp\agent\extensions\omp-ds-routing-suite
 **Conclusion for users.** Install, fully restart OMP, use the plugin —
 there is nothing to configure. The defaults (weak mode, anchor, guidance)
 are the measured optimum; the commands below are escape hatches for special
-situations, not daily tools.
+situations.
 
 "Router: ..." lines that appear in the transcript after each user message are
 the injected guidance text, addressed to the model. They are not configuration
@@ -471,7 +472,7 @@ does not improve output. Scope: per-turn isolated processes (cold start);
 the suite's design target is conversational long-horizon (same-session
 ledger resume), which this experiment does not cover.
 
-**Conclusion for users (what the evidence says about how you work).**
+**Conclusion for users.**
 
 - **Design-heavy greenfield tasks** (new projects, new features with
   ambiguous requirements): this is where the plugin pays off — anchoring
@@ -540,6 +541,8 @@ PowerShell 7-specific syntax is used.
   measurement noise. This document makes no effect claims beyond section 3.
 - **Timeliness.** All measurements were taken against the 2026-08-16 official
   DeepSeek API snapshot; a model update may invalidate them.
+- **Authoritativeness.** DeepSWE-class benchmark scores were not run (API
+  cost). These are personal test summaries, not authoritative data.
 - **Quality.** The plugin does not guarantee output quality, correctness, or
   task success.
 
